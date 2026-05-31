@@ -11,32 +11,32 @@ export default {
         sans: ['Poppins', 'sans-serif'],
       },
       colors: {
-        primary: { // Vibrant Purple
-          50: '#faf5ff',
-          100: '#f3e8ff',
-          200: '#e9d5ff',
-          400: '#c084fc',
-          500: '#a855f7', 
-          600: '#9333ea',
-          700: '#7e22ce',
-          800: '#6b21a8',
-          900: '#581c87',
+        primary: { // Caramel
+          50: '#fdf8f3',
+          100: '#faece0',
+          200: '#f3d3b7',
+          400: '#e49c5e',
+          500: '#da7b33', 
+          600: '#cc6126',
+          700: '#ab4a22',
+          800: '#893d22',
+          900: '#6f341f',
         },
-        secondary: { // Deep Blue
-          50: '#eff6ff',
-          100: '#dbeafe',
-          200: '#bfdbfe',
-          400: '#60a5fa',
-          500: '#3b82f6', 
-          600: '#2563eb',
-          700: '#1d4ed8',
-          800: '#1e40af',
-          900: '#1e3a8a',
+        secondary: { // Raisin
+          50: '#f5f4f5',
+          100: '#ebe9ec',
+          200: '#d3cdd5',
+          400: '#9e91a3',
+          500: '#7c6d83', 
+          600: '#625368',
+          700: '#4d4052',
+          800: '#3e3443',
+          900: '#242124',
         },
         accent: {
-          400: '#34d399',
-          500: '#10b981', // Emerald
-          600: '#059669',
+          400: '#fbbf24',
+          500: '#f59e0b', // Amber/Caramel highlight
+          600: '#d97706',
         }
       }
     },
