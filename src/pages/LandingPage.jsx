@@ -18,10 +18,10 @@ export default function LandingPage() {
             <span>Smart Service Recommendation System</span>
           </div>
           
-          <h1 className="text-5xl md:text-7xl font-extrabold text-slate-900 dark:text-white tracking-tight leading-tight">
-            Find the perfect service <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-600 to-indigo-500 dark:from-primary-400 dark:to-indigo-300">
-              near you, instantly.
+          <h1 className="text-5xl md:text-7xl font-black mb-6 tracking-tight text-slate-900 dark:text-white leading-tight">
+            Find the Best Services in Your <br className="hidden md:block" />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-600 to-secondary-500 dark:from-primary-400 dark:to-secondary-300">
+              Neighborhood
             </span>
           </h1>
           

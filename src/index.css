@@ -7,21 +7,22 @@
 
 @layer base {
   body {
-    @apply bg-[#f8f5ff] text-slate-900 font-sans antialiased transition-colors duration-300;
-    /* Vibrant Purple and Blue subtle background for Light Mode */
-    background-image: radial-gradient(at 0% 0%, rgba(168, 85, 247, 0.15) 0px, transparent 50%),
-                      radial-gradient(at 100% 0%, rgba(59, 130, 246, 0.15) 0px, transparent 50%),
-                      radial-gradient(at 100% 100%, rgba(147, 51, 234, 0.15) 0px, transparent 50%);
-    background-attachment: fixed;
+    @apply bg-primary-50 text-slate-900 font-sans antialiased transition-colors duration-300;
   }
   
+  /* Scrollbar styling */
+  ::-webkit-scrollbar {
+    width: 8px;
+  }
+  ::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply bg-primary-200 rounded-full dark:bg-secondary-700;
+  }
+
   .dark body {
-    @apply bg-[#0f0e17] text-slate-100;
-    /* Deep glowing Purple and Blue for Dark Mode */
-    background-image: radial-gradient(at 0% 0%, rgba(168, 85, 247, 0.18) 0px, transparent 50%),
-                      radial-gradient(at 100% 0%, rgba(59, 130, 246, 0.18) 0px, transparent 50%),
-                      radial-gradient(at 100% 100%, rgba(88, 28, 135, 0.3) 0px, transparent 50%);
-    background-attachment: fixed;
+    @apply bg-secondary-900 text-slate-100;
   }
   
   ::selection {
