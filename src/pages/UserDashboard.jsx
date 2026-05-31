@@ -8,6 +8,7 @@ import { MapContainer, TileLayer, Marker, Popup, useMap, Polyline } from 'react-
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { useTranslation } from 'react-i18next';
+import { isShopOpen } from '../utils/timeUtils';
 
 // Fix for default marker icon in leaflet
 delete L.Icon.Default.prototype._getIconUrl;
@@ -223,8 +224,8 @@ export default function UserDashboard() {
     <div className="space-y-8">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-8">
         <div>
-          <h1 className="text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight">Discover Services</h1>
-          <p className="text-slate-500 dark:text-slate-400 mt-2 font-medium">Find the best-rated shops near you</p>
+          <h1 className="text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight">{t('user.discover_services') || 'Discover Services'}</h1>
+          <p className="text-slate-500 dark:text-slate-400 mt-2 font-medium">{t('user.find_best_rated') || 'Find the best-rated shops near you'}</p>
         </div>
         
         <div className="flex flex-wrap gap-3 w-full lg:w-auto bg-white/80 dark:bg-slate-900/80 backdrop-blur-md p-4 rounded-2xl shadow-sm border border-slate-200/60 dark:border-slate-700/60 z-20 items-center">
@@ -267,7 +268,7 @@ export default function UserDashboard() {
               onChange={(e) => setPriceRange(e.target.value)}
             />
             <datalist id="price-options">
-              <option value="All">Any Price</option>
+              <option value="All">{t('user.any_price') || 'Any Price'}</option>
               <option value="0-100">0 - 100</option>
               <option value="100-500">100 - 500</option>
               <option value="500-1000">500 - 1000</option>
@@ -303,6 +304,7 @@ export default function UserDashboard() {
               {rankedShops.map((shop, index) => {
                 const isBest = index === 0 && filteredShops.length > 1;
                 const isSelected = selectedMapShop?.id === shop.id;
+                const isOpen = isShopOpen(shop.openingTime, shop.closingTime);
                 
                 return (
                   <motion.div 
@@ -322,8 +324,23 @@ export default function UserDashboard() {
                   
                   <div className="mt-2 mb-5 pr-20">
                     <div className="flex justify-between items-start mb-2">
-                      <h3 className="text-2xl font-bold text-slate-800 dark:text-white line-clamp-1 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">{shop.name}</h3>
-                      <span className="bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-xs px-3 py-1.5 rounded-lg font-bold uppercase tracking-wider">{shop.type}</span>
+                      <div>
+                        <h3 className="text-2xl font-bold text-slate-800 dark:text-white line-clamp-1 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">{shop.name}</h3>
+                        <div className="flex items-center mt-1">
+                          {isOpen ? (
+                            <span className="flex items-center text-xs font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/30 px-2 py-0.5 rounded">
+                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1.5 animate-pulse"></span>
+                              {t('shop.open_now') || 'Open Now'}
+                            </span>
+                          ) : (
+                            <span className="flex items-center text-xs font-medium text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/30 px-2 py-0.5 rounded">
+                              <span className="w-1.5 h-1.5 rounded-full bg-red-500 mr-1.5"></span>
+                              {t('shop.closed') || 'Closed'}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      <span className="bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-xs px-3 py-1.5 rounded-lg font-bold uppercase tracking-wider">{t(`shop_types.${shop.type.toLowerCase()}`) || shop.type}</span>
                     </div>
                     <p className="text-slate-500 dark:text-slate-400 text-sm line-clamp-2 leading-relaxed">{shop.description}</p>
                     
@@ -391,8 +408,8 @@ export default function UserDashboard() {
                 <div className="w-20 h-20 bg-slate-50 dark:bg-slate-900/50 rounded-full flex items-center justify-center mb-4">
                   <Search className="w-8 h-8 text-slate-300 dark:text-slate-600" />
                 </div>
-                <h3 className="text-xl font-bold text-slate-800 dark:text-white mb-2">{t('No matches found')}</h3>
-                <p className="text-slate-500 dark:text-slate-400 max-w-xs mx-auto text-sm">We couldn't find any services matching your specific filters. Try adjusting them.</p>
+                <h3 className="text-xl font-bold text-slate-800 dark:text-white mb-2">{t('user.no_matches_found') || 'No matches found'}</h3>
+                <p className="text-slate-500 dark:text-slate-400 max-w-xs mx-auto text-sm">{t('user.no_matches_subtitle') || 'We couldn\'t find any services matching your specific filters. Try adjusting them.'}</p>
                 <button 
                   onClick={() => {setFilterType('All'); setPriceRange(''); setMinRating('');}} 
                   className="mt-6 px-6 py-2 bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-400 font-bold rounded-xl hover:bg-primary-200 transition-colors"

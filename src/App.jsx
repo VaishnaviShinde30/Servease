@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { Toaster } from 'react-hot-toast';
 import Login from './pages/Login';
@@ -37,11 +37,13 @@ function ProtectedRoute({ children, allowedRoles }) {
 
 function AppRoutes() {
   const { user, role } = useAuth();
+  const location = useLocation();
+  const isLandingPage = location.pathname === '/';
 
   return (
-    <div className="min-h-screen flex flex-col font-sans">
+    <div className="min-h-screen flex flex-col font-sans bg-slate-50/50 dark:bg-slate-900">
       <Navbar />
-      <main className="flex-grow container mx-auto px-4 py-8 max-w-7xl">
+      <main className={`flex-grow ${!isLandingPage ? 'container mx-auto px-4 py-8 max-w-7xl' : ''}`}>
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<Login />} />

@@ -1,7 +1,9 @@
 import { Hexagon, Mail, Phone, MapPin, Twitter, Facebook, Instagram, Linkedin, Compass } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 export default function Footer() {
+  const { t } = useTranslation();
   return (
     <footer className="bg-slate-900 text-slate-400 py-12 mt-auto border-t border-slate-800">
       <div className="container mx-auto px-4 max-w-7xl">
@@ -18,12 +20,12 @@ export default function Footer() {
                   Servease
                 </span>
                 <span className="text-[8px] font-semibold text-slate-400 tracking-wider uppercase mt-1">
-                  We Recommend, You Decide
+                  {t('navbar.subtitle') || 'We Recommend, You Decide'}
                 </span>
               </div>
             </Link>
             <p className="text-sm text-slate-400 mb-4 leading-relaxed">
-              Smart service recommendation platform. Connecting students and locals with the best-rated shops based on price, distance, and reviews.
+              {t('footer.desc') || 'Smart service recommendation platform. Connecting students and locals with the best-rated shops based on price, distance, and reviews.'}
             </p>
             <div className="flex space-x-4">
               <a href="#" className="text-slate-500 hover:text-white transition-colors"><Twitter className="w-5 h-5" /></a>
@@ -35,34 +37,34 @@ export default function Footer() {
 
           {/* Quick Links */}
           <div>
-            <h4 className="text-white font-bold mb-4 uppercase tracking-wider text-sm">Platform</h4>
+            <h4 className="text-white font-bold mb-4 uppercase tracking-wider text-sm">{t('footer.platform') || 'Platform'}</h4>
             <ul className="space-y-2 text-sm">
-              <li><Link to="/" className="hover:text-primary-400 transition-colors">Home</Link></li>
-              <li><Link to="/user" className="hover:text-primary-400 transition-colors">Find Services</Link></li>
-              <li><Link to="/shopkeeper" className="hover:text-primary-400 transition-colors">List Your Shop</Link></li>
-              <li><a href="#" className="hover:text-primary-400 transition-colors">How it Works</a></li>
-              <li><a href="#" className="hover:text-primary-400 transition-colors">Pricing</a></li>
+              <li><Link to="/" className="hover:text-primary-400 transition-colors">{t('Home') || 'Home'}</Link></li>
+              <li><Link to="/user" className="hover:text-primary-400 transition-colors">{t('footer.find_services') || 'Find Services'}</Link></li>
+              <li><Link to="/shopkeeper" className="hover:text-primary-400 transition-colors">{t('footer.list_shop') || 'List Your Shop'}</Link></li>
+              <li><a href="#" className="hover:text-primary-400 transition-colors">{t('footer.how_it_works') || 'How it Works'}</a></li>
+              <li><a href="#" className="hover:text-primary-400 transition-colors">{t('footer.pricing') || 'Pricing'}</a></li>
             </ul>
           </div>
 
           {/* Legal */}
           <div>
-            <h4 className="text-white font-bold mb-4 uppercase tracking-wider text-sm">Legal</h4>
+            <h4 className="text-white font-bold mb-4 uppercase tracking-wider text-sm">{t('footer.legal') || 'Legal'}</h4>
             <ul className="space-y-2 text-sm">
-              <li><a href="#" className="hover:text-primary-400 transition-colors">Terms of Service</a></li>
-              <li><a href="#" className="hover:text-primary-400 transition-colors">Privacy Policy</a></li>
-              <li><a href="#" className="hover:text-primary-400 transition-colors">Cookie Policy</a></li>
-              <li><a href="#" className="hover:text-primary-400 transition-colors">Disclaimer</a></li>
+              <li><a href="#" className="hover:text-primary-400 transition-colors">{t('footer.terms') || 'Terms of Service'}</a></li>
+              <li><a href="#" className="hover:text-primary-400 transition-colors">{t('footer.privacy') || 'Privacy Policy'}</a></li>
+              <li><a href="#" className="hover:text-primary-400 transition-colors">{t('footer.cookie') || 'Cookie Policy'}</a></li>
+              <li><a href="#" className="hover:text-primary-400 transition-colors">{t('footer.disclaimer') || 'Disclaimer'}</a></li>
             </ul>
           </div>
 
           {/* Contact */}
           <div>
-            <h4 className="text-white font-bold mb-4 uppercase tracking-wider text-sm">Contact Us</h4>
+            <h4 className="text-white font-bold mb-4 uppercase tracking-wider text-sm">{t('footer.contact') || 'Contact Us'}</h4>
             <ul className="space-y-3 text-sm">
               <li className="flex items-start space-x-3">
                 <MapPin className="w-5 h-5 text-primary-500 shrink-0" />
-                <span>123 University Road, Tech Park,<br/>Pune, MH 411001</span>
+                <span>{t('footer.address') || '123 University Road, Tech Park, Pune, MH 411001'}</span>
               </li>
               <li className="flex items-center space-x-3">
                 <Phone className="w-5 h-5 text-primary-500 shrink-0" />
@@ -79,7 +81,7 @@ export default function Footer() {
         {/* Copyright */}
         <div className="pt-8 border-t border-slate-800 text-center text-sm text-slate-500 flex flex-col md:flex-row justify-between items-center">
           <p>&copy; {new Date().getFullYear()} Servease Inc. All rights reserved.</p>
-          <p className="mt-2 md:mt-0">Designed for Final Year Demonstration</p>
+          <p className="mt-2 md:mt-0">{t('footer.designed') || 'Designed for Final Year Demonstration'}</p>
         </div>
       </div>
     </footer>

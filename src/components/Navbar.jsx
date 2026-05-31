@@ -43,7 +43,7 @@ export default function Navbar() {
                 Servease
               </span>
               <span className="text-[9px] font-semibold text-slate-500 dark:text-slate-400 tracking-wider uppercase mt-1">
-                We Recommend, You Decide
+                {t('navbar.subtitle') || 'We Recommend, You Decide'}
               </span>
             </div>
           </Link>
@@ -56,9 +56,9 @@ export default function Navbar() {
                 onChange={changeLanguage}
                 className="bg-transparent text-xs font-bold text-slate-700 dark:text-slate-300 outline-none cursor-pointer"
               >
-                <option value="en">EN</option>
-                <option value="hi">HI</option>
-                <option value="mr">MR</option>
+                <option value="en">English</option>
+                <option value="hi">हिंदी</option>
+                <option value="mr">मराठी</option>
               </select>
             </div>
 
@@ -97,7 +97,7 @@ export default function Navbar() {
                 <Link to="/login" className="text-slate-600 dark:text-slate-300 hover:text-primary-600 dark:hover:text-primary-400 font-semibold transition-colors">{t('Login')}</Link>
                 <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                   <Link to="/signup" className="bg-gradient-to-r from-primary-600 to-primary-500 hover:from-primary-700 hover:to-primary-600 text-white px-6 py-2.5 rounded-xl font-bold shadow-lg shadow-primary-500/30 transition-all border border-primary-500/50">
-                    Sign Up
+                    {t('navbar.sign_up') || 'Sign Up'}
                   </Link>
                 </motion.div>
               </>

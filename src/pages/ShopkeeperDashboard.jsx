@@ -144,10 +144,10 @@ export default function ShopkeeperDashboard() {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8 bg-white dark:bg-slate-800 p-8 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-700">
         <div>
           <h1 className="text-4xl font-extrabold text-slate-900 dark:text-white flex items-center tracking-tight">
-            <Store className="w-8 h-8 text-secondary-500 mr-3" /> My Shops
+            <Store className="w-8 h-8 text-secondary-500 mr-3" /> {t('My Shops')}
           </h1>
           <h1 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">{t('Shopkeeper Dashboard')}</h1>
-          <p className="text-slate-500 font-medium mt-1">Manage your service listings and business profile.</p>
+          <p className="text-slate-500 font-medium mt-1">{t('Manage your service listings and business profile.')}</p>
         </div>
         <button 
           onClick={() => { setFormData({ id: null, name: '', type: '', price: '', description: '', lat: '', lng: '', address: '', contact: '', openingTime: '', closingTime: '' }); setIsModalOpen(true); }}
@@ -327,34 +327,34 @@ export default function ShopkeeperDashboard() {
                     <input type="number" step="any" placeholder="e.g. 18.5204" className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl focus:ring-4 focus:ring-secondary-500/20 focus:border-secondary-500 outline-none transition-all shadow-sm font-medium" value={formData.lat} onChange={e => setFormData({...formData, lat: e.target.value})} />
                   </div>
                   <div className="flex-1">
-                    <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Longitude (Optional)</label>
+                    <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">{t('shop.longitude') || 'Longitude (Optional)'}</label>
                     <input type="number" step="any" placeholder="e.g. 73.8567" className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl focus:ring-4 focus:ring-secondary-500/20 focus:border-secondary-500 outline-none transition-all shadow-sm font-medium" value={formData.lng} onChange={e => setFormData({...formData, lng: e.target.value})} />
                   </div>
                 </div>
                 <div className="flex gap-4">
                   <div className="flex-1">
-                    <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Contact Number</label>
+                    <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">{t('shop.contact') || 'Contact Number'}</label>
                     <input required type="tel" placeholder="e.g. 9876543210" className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl focus:ring-4 focus:ring-secondary-500/20 focus:border-secondary-500 outline-none transition-all shadow-sm font-medium" value={formData.contact} onChange={e => setFormData({...formData, contact: e.target.value})} />
                   </div>
                 </div>
                 <div className="flex gap-4">
                   <div className="flex-1">
-                    <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Location / Address</label>
+                    <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">{t('shop.location') || 'Location / Address'}</label>
                     <input required type="text" placeholder="e.g. MG Road, Pune" className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl focus:ring-4 focus:ring-secondary-500/20 focus:border-secondary-500 outline-none transition-all shadow-sm font-medium" value={formData.address} onChange={e => setFormData({...formData, address: e.target.value})} />
                   </div>
                 </div>
                 <div className="flex gap-4">
                   <div className="flex-1">
-                    <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Opening Time</label>
+                    <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">{t('shop.opening_time') || 'Opening Time'}</label>
                     <input type="time" className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl focus:ring-4 focus:ring-secondary-500/20 focus:border-secondary-500 outline-none transition-all shadow-sm font-medium" value={formData.openingTime} onChange={e => setFormData({...formData, openingTime: e.target.value})} />
                   </div>
                   <div className="flex-1">
-                    <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Closing Time</label>
+                    <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">{t('shop.closing_time') || 'Closing Time'}</label>
                     <input type="time" className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl focus:ring-4 focus:ring-secondary-500/20 focus:border-secondary-500 outline-none transition-all shadow-sm font-medium" value={formData.closingTime} onChange={e => setFormData({...formData, closingTime: e.target.value})} />
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Description</label>
+                  <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">{t('shop.description') || 'Description'}</label>
                   <textarea required className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl focus:ring-4 focus:ring-secondary-500/20 focus:border-secondary-500 outline-none transition-all shadow-sm h-28 resize-none font-medium" value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})}></textarea>
                 </div>
                   <div className="flex gap-4 pt-4">

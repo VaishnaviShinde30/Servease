@@ -82,7 +82,88 @@ const resources = {
       "Contact Number": "Contact Number",
       "Location / Address": "Location / Address",
       "Bio / Description": "Bio / Description",
-      "Save Profile": "Save Profile"
+      "Save Profile": "Save Profile",
+
+      // Shop timings and status
+      
+      'shop_types.printing': 'Printing',
+      'shop_types.tailoring': 'Tailoring',
+      'shop_types.plumbing': 'Plumbing',
+      'shop_types.cleaning': 'Cleaning',
+      'shop_types.electrical': 'Electrical',
+      'shop_types.mechanic': 'Mechanic',
+      'shop_types.other': 'Other',
+
+      
+      'navbar.subtitle': 'We Recommend, You Decide',
+      'navbar.sign_up': 'Sign Up',
+      'landing.feature_1_title': 'Smart Discovery',
+      'landing.feature_1_desc': 'Our algorithm ranks shops by balancing distance, price, and customer reviews.',
+      'landing.feature_2_title': 'Trusted Reviews',
+      'landing.feature_2_desc': 'Real reviews from local customers help you make the best decision.',
+      'landing.feature_3_title': 'Grow Your Business',
+      'landing.feature_3_desc': 'Shopkeepers can easily list their services and attract nearby customers.',
+      'Shopkeeper Dashboard': 'Shopkeeper Dashboard',
+      'Manage your service listings and business profile.': 'Manage your service listings and business profile.',
+
+      
+      // Login
+      'login.welcome': 'Welcome Back',
+      'login.subtitle': 'Sign in to Servease to continue',
+      'login.authenticating': 'Authenticating...',
+      'login.sign_in': 'Sign In',
+      'login.no_account': 'Don\'t have an account?',
+      
+      // Signup
+      'signup.title': 'Create Account',
+      'signup.subtitle': 'Join Servease today',
+      'signup.iam': 'I am a...',
+      'signup.user': 'User',
+      'signup.shopkeeper': 'Shopkeeper',
+      'signup.creating': 'Creating Account...',
+      'signup.have_account': 'Already have an account?',
+      
+      // Footer
+      'footer.desc': 'Smart service recommendation platform. Connecting students and locals with the best-rated shops based on price, distance, and reviews.',
+      'footer.platform': 'Platform',
+      'footer.find_services': 'Find Services',
+      'footer.list_shop': 'List Your Shop',
+      'footer.how_it_works': 'How it Works',
+      'footer.pricing': 'Pricing',
+      'footer.legal': 'Legal',
+      'footer.terms': 'Terms of Service',
+      'footer.privacy': 'Privacy Policy',
+      'footer.cookie': 'Cookie Policy',
+      'footer.disclaimer': 'Disclaimer',
+      'footer.contact': 'Contact Us',
+      'footer.address': '123 University Road, Tech Park, Pune, MH 411001',
+      'footer.designed': 'Designed for Final Year Demonstration',
+
+      'shop.open_now': 'Open Now',
+      'shop.closed': 'Closed',
+      'shop.longitude': 'Longitude (Optional)',
+      'shop.contact': 'Contact Number',
+      'shop.location': 'Location / Address',
+      'shop.opening_time': 'Opening Time',
+      'shop.closing_time': 'Closing Time',
+      'shop.description': 'Description',
+      'landing.smart_recommendation': 'Smart Service Recommendation System',
+      'landing.find_perfect_service': 'Find the perfect service',
+      'landing.near_you_instantly': 'near you, instantly.',
+      'landing.hero_subtitle': 'Servease helps you discover top-rated tailors, xerox shops, mechanics, and laundry services. We analyze price, distance, and ratings to recommend the absolute best option.',
+      'landing.go_to_dashboard': 'Go to Dashboard',
+      'landing.get_started_now': 'Get Started Now',
+      'landing.login_to_account': 'Login to Account',
+      'landing.top_rated_services': 'Top Rated Services',
+      'landing.join_today_subtitle': 'Join today to book or review these amazing local shops.',
+      'landing.top_pick': 'Top Pick',
+      'landing.login_to_view': 'Login to view',
+      'user.discover_services': 'Discover Services',
+      'user.find_best_rated': 'Find the best-rated shops near you',
+      'user.any_price': 'Any Price',
+      'user.no_matches_found': 'No matches found',
+      'user.no_matches_subtitle': 'We could not find any services matching your specific filters. Try adjusting them.',
+
     }
   },
   hi: {
@@ -164,7 +245,88 @@ const resources = {
       "Contact Number": "संपर्क नंबर",
       "Location / Address": "स्थान / पता",
       "Bio / Description": "बायो / विवरण",
-      "Save Profile": "प्रोफ़ाइल सहेजें"
+      "Save Profile": "प्रोफ़ाइल सहेजें",
+
+      // Shop timings and status
+      
+      'shop_types.printing': 'प्रिंटिंग',
+      'shop_types.tailoring': 'सिलाई',
+      'shop_types.plumbing': 'प्लंबिंग',
+      'shop_types.cleaning': 'सफाई',
+      'shop_types.electrical': 'इलेक्ट्रिकल',
+      'shop_types.mechanic': 'मैकेनिक',
+      'shop_types.other': 'अन्य',
+
+      
+      'navbar.subtitle': 'हम सलाह देते हैं, आप तय करें',
+      'navbar.sign_up': 'साइन अप करें',
+      'landing.feature_1_title': 'स्मार्ट खोज',
+      'landing.feature_1_desc': 'हमारा एल्गोरिदम दूरी, कीमत और ग्राहक समीक्षाओं को संतुलित करके दुकानों को रैंक करता है।',
+      'landing.feature_2_title': 'विश्वसनीय समीक्षाएं',
+      'landing.feature_2_desc': 'स्थानीय ग्राहकों की वास्तविक समीक्षाएं आपको सर्वोत्तम निर्णय लेने में मदद करती हैं।',
+      'landing.feature_3_title': 'अपना व्यवसाय बढ़ाएं',
+      'landing.feature_3_desc': 'दुकानदार आसानी से अपनी सेवाओं को सूचीबद्ध कर सकते हैं और आस-पास के ग्राहकों को आकर्षित कर सकते हैं।',
+      'Shopkeeper Dashboard': 'दुकानदार डैशबोर्ड',
+      'Manage your service listings and business profile.': 'अपनी सेवा सूची और व्यावसायिक प्रोफ़ाइल प्रबंधित करें।',
+
+      
+      // Login
+      'login.welcome': 'वापसी पर स्वागत है',
+      'login.subtitle': 'जारी रखने के लिए Servease में साइन इन करें',
+      'login.authenticating': 'प्रमाणीकरण हो रहा है...',
+      'login.sign_in': 'साइन इन करें',
+      'login.no_account': 'क्या आपके पास खाता नहीं है?',
+      
+      // Signup
+      'signup.title': 'खाता बनाएँ',
+      'signup.subtitle': 'आज ही Servease से जुड़ें',
+      'signup.iam': 'मैं हूँ एक...',
+      'signup.user': 'उपयोगकर्ता',
+      'signup.shopkeeper': 'दुकानदार',
+      'signup.creating': 'खाता बनाया जा रहा है...',
+      'signup.have_account': 'क्या आपके पास पहले से खाता है?',
+      
+      // Footer
+      'footer.desc': 'स्मार्ट सेवा अनुशंसा मंच। छात्रों और स्थानीय लोगों को कीमत, दूरी और समीक्षाओं के आधार पर सर्वोत्तम रेटेड दुकानों से जोड़ना।',
+      'footer.platform': 'प्लेटफ़ॉर्म',
+      'footer.find_services': 'सेवाएँ खोजें',
+      'footer.list_shop': 'अपनी दुकान सूचीबद्ध करें',
+      'footer.how_it_works': 'यह कैसे काम करता है',
+      'footer.pricing': 'मूल्य निर्धारण',
+      'footer.legal': 'कानूनी',
+      'footer.terms': 'सेवा की शर्तें',
+      'footer.privacy': 'गोपनीयता नीति',
+      'footer.cookie': 'कुकी नीति',
+      'footer.disclaimer': 'अस्वीकरण',
+      'footer.contact': 'संपर्क करें',
+      'footer.address': '१२३ यूनिवर्सिटी रोड, टेक पार्क, पुणे, MH ४११००१',
+      'footer.designed': 'अंतिम वर्ष के प्रदर्शन के लिए डिज़ाइन किया गया',
+
+      'shop.open_now': 'अभी खुला है',
+      'shop.closed': 'बंद है',
+      'shop.longitude': 'देशांतर (वैकल्पिक)',
+      'shop.contact': 'संपर्क नंबर',
+      'shop.location': 'स्थान / पता',
+      'shop.opening_time': 'खुलने का समय',
+      'shop.closing_time': 'बंद होने का समय',
+      'shop.description': 'विवरण',
+      'landing.smart_recommendation': 'स्मार्ट सेवा अनुशंसा प्रणाली',
+      'landing.find_perfect_service': 'एकदम सही सेवा खोजें',
+      'landing.near_you_instantly': 'आपके पास, तुरंत।',
+      'landing.hero_subtitle': 'Servease आपको टॉप-रेटेड टेलर्स, ज़ेरॉक्स शॉप्स, मैकेनिक्स और लॉन्ड्री सेवाओं को खोजने में मदद करता है। हम सबसे अच्छा विकल्प सुझाने के लिए कीमत, दूरी और रेटिंग का विश्लेषण करते हैं।',
+      'landing.go_to_dashboard': 'डैशबोर्ड पर जाएं',
+      'landing.get_started_now': 'अभी शुरू करें',
+      'landing.login_to_account': 'खाते में लॉग इन करें',
+      'landing.top_rated_services': 'शीर्ष रेटेड सेवाएं',
+      'landing.join_today_subtitle': 'इन अद्भुत स्थानीय दुकानों को बुक करने या उनकी समीक्षा करने के लिए आज ही जुड़ें।',
+      'landing.top_pick': 'शीर्ष पसंद',
+      'landing.login_to_view': 'देखने के लिए लॉग इन करें',
+      'user.discover_services': 'सेवाएं खोजें',
+      'user.find_best_rated': 'अपने आस-पास की सबसे अच्छी रेटिंग वाली दुकानें खोजें',
+      'user.any_price': 'कोई भी कीमत',
+      'user.no_matches_found': 'कोई मेल नहीं मिला',
+      'user.no_matches_subtitle': 'हम आपके विशिष्ट फ़िल्टर से मेल खाने वाली कोई सेवा नहीं ढूँढ सके। उन्हें समायोजित करने का प्रयास करें।',
+
     }
   },
   mr: {
@@ -246,7 +408,88 @@ const resources = {
       "Contact Number": "संपर्क क्रमांक",
       "Location / Address": "स्थान / पत्ता",
       "Bio / Description": "बायो / वर्णन",
-      "Save Profile": "प्रोफाइल सेव्ह करा"
+      "Save Profile": "प्रोफाइल सेव्ह करा",
+
+      // Shop timings and status
+      
+      'shop_types.printing': 'छपाई',
+      'shop_types.tailoring': 'शिंपी',
+      'shop_types.plumbing': 'प्लंबिंग',
+      'shop_types.cleaning': 'साफसफाई',
+      'shop_types.electrical': 'इलेक्ट्रिकल',
+      'shop_types.mechanic': 'मेकॅनिक',
+      'shop_types.other': 'इतर',
+
+      
+      'navbar.subtitle': 'आम्ही शिफारस करतो, तुम्ही ठरवा',
+      'navbar.sign_up': 'साइन अप करा',
+      'landing.feature_1_title': 'स्मार्ट शोध',
+      'landing.feature_1_desc': 'आमचे अल्गोरिदम अंतर, किंमत आणि ग्राहक पुनरावलोकने संतुलित करून दुकानांना रँक करते.',
+      'landing.feature_2_title': 'विश्वसनीय पुनरावलोकने',
+      'landing.feature_2_desc': 'स्थानिक ग्राहकांची वास्तविक पुनरावलोकने तुम्हाला सर्वोत्तम निर्णय घेण्यास मदत करतात.',
+      'landing.feature_3_title': 'तुमचा व्यवसाय वाढवा',
+      'landing.feature_3_desc': 'दुकानदार सहजपणे त्यांच्या सेवा सूचीबद्ध करू शकतात आणि जवळील ग्राहकांना आकर्षित करू शकतात.',
+      'Shopkeeper Dashboard': 'दुकानदार डॅशबोर्ड',
+      'Manage your service listings and business profile.': 'तुमची सेवा सूची आणि व्यवसाय प्रोफाइल व्यवस्थापित करा.',
+
+      
+      // Login
+      'login.welcome': 'परत स्वागत आहे',
+      'login.subtitle': 'सुरू ठेवण्यासाठी Servease मध्ये साइन इन करा',
+      'login.authenticating': 'प्रमाणीकरण करत आहे...',
+      'login.sign_in': 'साइन इन करा',
+      'login.no_account': 'खाते नाहीये का?',
+      
+      // Signup
+      'signup.title': 'खाते तयार करा',
+      'signup.subtitle': 'आजच Servease मध्ये सामील व्हा',
+      'signup.iam': 'मी आहे एक...',
+      'signup.user': 'वापरकर्ता',
+      'signup.shopkeeper': 'दुकानदार',
+      'signup.creating': 'खाते तयार करत आहे...',
+      'signup.have_account': 'आधीच खाते आहे का?',
+      
+      // Footer
+      'footer.desc': 'स्मार्ट सेवा शिफारस प्लॅटफॉर्म. किंमत, अंतर आणि पुनरावलोकनांवर आधारित सर्वोत्तम रेट केलेल्या दुकानांशी विद्यार्थी आणि स्थानिकांना जोडत आहे.',
+      'footer.platform': 'प्लॅटफॉर्म',
+      'footer.find_services': 'सेवा शोधा',
+      'footer.list_shop': 'तुमचे दुकान सूचीबद्ध करा',
+      'footer.how_it_works': 'हे कसे काम करते',
+      'footer.pricing': 'किंमत',
+      'footer.legal': 'कायदेशीर',
+      'footer.terms': 'सेवा अटी',
+      'footer.privacy': 'गोपनीयता धोरण',
+      'footer.cookie': 'कुकी धोरण',
+      'footer.disclaimer': 'अस्वीकरण',
+      'footer.contact': 'संपर्क साधा',
+      'footer.address': '१२३ युनिव्हर्सिटी रोड, टेक पार्क, पुणे, MH ४११००१',
+      'footer.designed': 'अंतिम वर्षाच्या प्रात्यक्षिकासाठी डिझाइन केलेले',
+
+      'shop.open_now': 'आता उघडे आहे',
+      'shop.closed': 'बंद आहे',
+      'shop.longitude': 'रेखांश (पर्यायी)',
+      'shop.contact': 'संपर्क क्रमांक',
+      'shop.location': 'स्थान / पत्ता',
+      'shop.opening_time': 'उघडण्याची वेळ',
+      'shop.closing_time': 'बंद होण्याची वेळ',
+      'shop.description': 'वर्णन',
+      'landing.smart_recommendation': 'स्मार्ट सेवा शिफारस प्रणाली',
+      'landing.find_perfect_service': 'तुमच्या जवळ परिपूर्ण सेवा शोधा',
+      'landing.near_you_instantly': 'तुमच्या जवळ, त्वरित.',
+      'landing.hero_subtitle': 'Servease तुम्हाला टॉप-रेटेड टेलर्स, झेरॉक्स शॉप्स, मेकॅनिक्स आणि लाँड्री सेवा शोधण्यात मदत करते. आम्ही सर्वोत्तम पर्यायाची शिफारस करण्यासाठी किंमत, अंतर आणि रेटिंगचे विश्लेषण करतो.',
+      'landing.go_to_dashboard': 'डॅशबोर्डवर जा',
+      'landing.get_started_now': 'आता सुरू करा',
+      'landing.login_to_account': 'खात्यात लॉग इन करा',
+      'landing.top_rated_services': 'शीर्ष रेटेड सेवा',
+      'landing.join_today_subtitle': 'या अद्भुत स्थानिक दुकानांची नोंदणी करण्यासाठी किंवा त्यांचे पुनरावलोकन करण्यासाठी आजच सामील व्हा.',
+      'landing.top_pick': 'उत्कृष्ट निवड',
+      'landing.login_to_view': 'पाहण्यासाठी लॉग इन करा',
+      'user.discover_services': 'सेवा शोधा',
+      'user.find_best_rated': 'तुमच्या जवळील सर्वोत्तम रेटिंग असलेली दुकाने शोधा',
+      'user.any_price': 'कोणतीही किंमत',
+      'user.no_matches_found': 'काहीही जुळले नाही',
+      'user.no_matches_subtitle': 'आम्हाला तुमच्या विशिष्ट फिल्टरशी जुळणारी कोणतीही सेवा सापडली नाही. ते समायोजित करण्याचा प्रयत्न करा.',
+
     }
   }
 };

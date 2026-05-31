@@ -5,16 +5,47 @@ import { DUMMY_REPORTS } from '../data/dummyReports';
 import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
+import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { DUMMY_SHOPS } from '../data/dummyShops';
 
+const DUMMY_USERS = [
+  { id: 'usr-1', name: 'John Doe', email: 'john@example.com', role: 'customer', suspended: false },
+  { id: 'usr-2', name: 'Jane Smith', email: 'jane@example.com', role: 'shopkeeper', suspended: false },
+  { id: 'usr-3', name: 'Admin', email: 'admin@servease.com', role: 'admin', suspended: false },
+  { id: 'usr-4', name: 'Bob Wilson', email: 'bob@example.com', role: 'customer', suspended: true }
+];
+
+const userGrowthData = [
+  { name: 'Jan', users: 400, left: 24 },
+  { name: 'Feb', users: 600, left: 13 },
+  { name: 'Mar', users: 850, left: 43 },
+  { name: 'Apr', users: 1100, left: 21 },
+  { name: 'May', users: 1500, left: 35 },
+  { name: 'Jun', users: 2100, left: 18 },
+];
+
+const shopCategoryData = [
+  { name: 'Plumbing', count: 45 },
+  { name: 'Tailoring', count: 85 },
+  { name: 'Xerox', count: 120 },
+  { name: 'Mechanic', count: 35 },
+  { name: 'Laundry', count: 60 },
+];
+
+const COLORS = ['#F59E0B', '#10B981', '#3B82F6', '#EF4444', '#8B5CF6'];
 export default function AdminDashboard() {
   const { t } = useTranslation();
   const [users, setUsers] = useState([]);
   const [shops, setShops] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('users');
+  const [activeTab, setActiveTab] = useState('analytics');
   const [selectedUser, setSelectedUser] = useState(null);
   const [selectedShop, setSelectedShop] = useState(null);
   const [reports, setReports] = useState([]);
+  const [isAddUserOpen, setIsAddUserOpen] = useState(false);
+  const [isAddShopOpen, setIsAddShopOpen] = useState(false);
+  const [newUser, setNewUser] = useState({ name: '', email: '', role: 'customer' });
+  const [newShop, setNewShop] = useState({ name: '', type: 'Plumbing', contact: '', owner_id: 'admin-created' });
 
   useEffect(() => {
     fetchData();
@@ -30,8 +61,9 @@ export default function AdminDashboard() {
       if (shopError) throw shopError;
       setShops(shopData || []);
     } catch (error) {
-      console.error('Error fetching admin data:', error);
-      toast.error('Failed to load system data');
+      console.error('Error fetching admin data, using fallback data:', error);
+      setUsers(DUMMY_USERS);
+      setShops(DUMMY_SHOPS);
     } finally {
       setReports(DUMMY_REPORTS);
       setLoading(false);
@@ -87,6 +119,38 @@ export default function AdminDashboard() {
     setReports(reports.map(r => r.id === id ? { ...r, status: 'resolved' } : r));
   };
 
+  const handleAddUser = (e) => {
+    e.preventDefault();
+    if(!newUser.name || !newUser.email) return toast.error('Please fill required fields');
+    const userToAdd = {
+      ...newUser,
+      id: 'usr-' + Math.random().toString(36).substring(7),
+      suspended: false
+    };
+    setUsers([userToAdd, ...users]);
+    setIsAddUserOpen(false);
+    setNewUser({ name: '', email: '', role: 'customer' });
+    toast.success('User added successfully');
+  };
+
+  const handleAddShop = (e) => {
+    e.preventDefault();
+    if(!newShop.name || !newShop.contact) return toast.error('Please fill required fields');
+    const shopToAdd = {
+      ...newShop,
+      id: 'shop-' + Math.random().toString(36).substring(7),
+      suspended: false,
+      price: Math.floor(Math.random() * 500) + 100,
+      rating: 4.5,
+      reviewCount: 0,
+      distance: 2.5
+    };
+    setShops([shopToAdd, ...shops]);
+    setIsAddShopOpen(false);
+    setNewShop({ name: '', type: 'Plumbing', contact: '', owner_id: 'admin-created' });
+    toast.success('Shop added successfully');
+  };
+
   return (
     <div className="space-y-8">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 w-full xl:w-2/3">
@@ -111,6 +175,12 @@ export default function AdminDashboard() {
           </div>
       <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden">
         <div className="flex p-2 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50">
+          <button 
+            className={`flex-1 py-4 text-center font-bold flex items-center justify-center transition-all rounded-2xl ${activeTab === 'analytics' ? 'text-slate-900 dark:text-white bg-white dark:bg-slate-800 shadow-sm ring-1 ring-slate-200 dark:ring-slate-700' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'}`}
+            onClick={() => setActiveTab('analytics')}
+          >
+            <Activity className="w-5 h-5 mr-2" /> {t('Analytics') || 'Analytics'}
+          </button>
           <button 
             className={`flex-1 py-4 text-center font-bold flex items-center justify-center transition-all rounded-2xl ${activeTab === 'users' ? 'text-slate-900 dark:text-white bg-white dark:bg-slate-800 shadow-sm ring-1 ring-slate-200 dark:ring-slate-700' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'}`}
             onClick={() => setActiveTab('users')}
@@ -143,8 +213,65 @@ export default function AdminDashboard() {
                 <div key={n} className="h-16 bg-slate-100 dark:bg-slate-800 rounded-xl animate-pulse"></div>
               ))}
             </div>
+          ) : activeTab === 'analytics' ? (
+            <div className="p-4 space-y-8">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                {/* Line Chart: Users Came and Went */}
+                <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700">
+                  <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-6 flex items-center">
+                    <Activity className="w-5 h-5 mr-2 text-primary-500" />
+                    {t('Users Growth (Joined vs Left)') || 'Users Growth (Joined vs Left)'}
+                  </h3>
+                  <div className="h-72">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <LineChart data={userGrowthData} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" vertical={false} />
+                        <XAxis dataKey="name" stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
+                        <YAxis stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
+                        <Tooltip 
+                          contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                          cursor={{ stroke: '#f1f5f9', strokeWidth: 2 }}
+                        />
+                        <Line type="monotone" dataKey="users" name="Users Joined" stroke="#F59E0B" strokeWidth={3} dot={{ r: 4, strokeWidth: 2 }} activeDot={{ r: 6 }} />
+                        <Line type="monotone" dataKey="left" name="Users Left" stroke="#EF4444" strokeWidth={3} dot={{ r: 4, strokeWidth: 2 }} />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
+
+                {/* Bar Chart: Shop Categories */}
+                <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700">
+                  <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-6 flex items-center">
+                    <Store className="w-5 h-5 mr-2 text-primary-500" />
+                    {t('Shops by Category') || 'Shops by Category'}
+                  </h3>
+                  <div className="h-72">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={shopCategoryData} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" vertical={false} />
+                        <XAxis dataKey="name" stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
+                        <YAxis stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
+                        <Tooltip 
+                          cursor={{ fill: '#f8fafc' }}
+                          contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                        />
+                        <Bar dataKey="count" name="Total Shops" radius={[6, 6, 0, 0]}>
+                          {shopCategoryData.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                          ))}
+                        </Bar>
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
+              </div>
+            </div>
           ) : activeTab === 'users' ? (
             <div className="overflow-x-auto">
+              <div className="flex justify-between items-center p-4">
+                <h3 className="font-bold text-slate-700 dark:text-slate-200">Manage Users</h3>
+                <button onClick={() => setIsAddUserOpen(true)} className="bg-primary-500 text-white px-4 py-2 rounded-xl text-sm font-bold shadow-lg shadow-primary-500/30 hover:bg-primary-600 transition-colors">+ Add User</button>
+              </div>
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="text-slate-400 text-xs uppercase tracking-wider border-b-2 border-slate-100 dark:border-slate-800">
@@ -205,6 +332,10 @@ export default function AdminDashboard() {
             </div>
           ) : activeTab === 'shops' ? (
             <div className="overflow-x-auto">
+              <div className="flex justify-between items-center p-4">
+                <h3 className="font-bold text-slate-700 dark:text-slate-200">Manage Shops</h3>
+                <button onClick={() => setIsAddShopOpen(true)} className="bg-primary-500 text-white px-4 py-2 rounded-xl text-sm font-bold shadow-lg shadow-primary-500/30 hover:bg-primary-600 transition-colors">+ Add Shop</button>
+              </div>
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="text-slate-400 text-xs uppercase tracking-wider border-b-2 border-slate-100 dark:border-slate-800">
@@ -438,6 +569,88 @@ export default function AdminDashboard() {
           </div>
         )}
       </AnimatePresence>
+
+      {/* Add User Modal */}
+      <AnimatePresence>
+        {isAddUserOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              className="bg-white dark:bg-slate-900 rounded-3xl w-full max-w-md shadow-2xl overflow-hidden border border-slate-200 dark:border-slate-800"
+            >
+              <div className="flex justify-between items-center p-6 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900">
+                <h2 className="text-xl font-bold text-slate-800 dark:text-white">Add New User</h2>
+                <button onClick={() => setIsAddUserOpen(false)} className="p-2 bg-slate-200 dark:bg-slate-800 rounded-full hover:bg-slate-300 dark:hover:bg-slate-700 transition-colors">
+                  <X className="w-5 h-5 text-slate-600 dark:text-slate-300" />
+                </button>
+              </div>
+              <form onSubmit={handleAddUser} className="p-6 space-y-4">
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Name</label>
+                  <input type="text" value={newUser.name} onChange={e => setNewUser({...newUser, name: e.target.value})} className="w-full bg-slate-50 dark:bg-slate-800 border-none rounded-xl p-3 text-slate-800 dark:text-white" placeholder="John Doe" required />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Email</label>
+                  <input type="email" value={newUser.email} onChange={e => setNewUser({...newUser, email: e.target.value})} className="w-full bg-slate-50 dark:bg-slate-800 border-none rounded-xl p-3 text-slate-800 dark:text-white" placeholder="john@example.com" required />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Role</label>
+                  <select value={newUser.role} onChange={e => setNewUser({...newUser, role: e.target.value})} className="w-full bg-slate-50 dark:bg-slate-800 border-none rounded-xl p-3 text-slate-800 dark:text-white">
+                    <option value="customer">Customer</option>
+                    <option value="shopkeeper">Shopkeeper</option>
+                    <option value="admin">Admin</option>
+                  </select>
+                </div>
+                <button type="submit" className="w-full bg-primary-500 text-white font-bold rounded-xl py-3 mt-4 hover:bg-primary-600 transition-colors">Add User</button>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Add Shop Modal */}
+      <AnimatePresence>
+        {isAddShopOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              className="bg-white dark:bg-slate-900 rounded-3xl w-full max-w-md shadow-2xl overflow-hidden border border-slate-200 dark:border-slate-800"
+            >
+              <div className="flex justify-between items-center p-6 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900">
+                <h2 className="text-xl font-bold text-slate-800 dark:text-white">Add New Shop</h2>
+                <button onClick={() => setIsAddShopOpen(false)} className="p-2 bg-slate-200 dark:bg-slate-800 rounded-full hover:bg-slate-300 dark:hover:bg-slate-700 transition-colors">
+                  <X className="w-5 h-5 text-slate-600 dark:text-slate-300" />
+                </button>
+              </div>
+              <form onSubmit={handleAddShop} className="p-6 space-y-4">
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Shop Name</label>
+                  <input type="text" value={newShop.name} onChange={e => setNewShop({...newShop, name: e.target.value})} className="w-full bg-slate-50 dark:bg-slate-800 border-none rounded-xl p-3 text-slate-800 dark:text-white" placeholder="Plumb Masters" required />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Category Type</label>
+                  <select value={newShop.type} onChange={e => setNewShop({...newShop, type: e.target.value})} className="w-full bg-slate-50 dark:bg-slate-800 border-none rounded-xl p-3 text-slate-800 dark:text-white">
+                    <option value="Plumbing">Plumbing</option>
+                    <option value="Tailoring">Tailoring</option>
+                    <option value="Xerox">Xerox</option>
+                    <option value="Electrician">Electrician</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Contact Details</label>
+                  <input type="text" value={newShop.contact} onChange={e => setNewShop({...newShop, contact: e.target.value})} className="w-full bg-slate-50 dark:bg-slate-800 border-none rounded-xl p-3 text-slate-800 dark:text-white" placeholder="+91 9876543210" required />
+                </div>
+                <button type="submit" className="w-full bg-primary-500 text-white font-bold rounded-xl py-3 mt-4 hover:bg-primary-600 transition-colors">Add Shop</button>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
     </div>
   );
 }

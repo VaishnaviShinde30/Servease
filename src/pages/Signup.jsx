@@ -3,8 +3,10 @@ import { useAuth } from '../context/AuthContext';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
 
 export default function Signup() {
+  const { t } = useTranslation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
@@ -41,13 +43,13 @@ export default function Signup() {
       className="max-w-md mx-auto mt-10 bg-white/80 backdrop-blur-xl p-8 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-white"
     >
       <div className="text-center mb-8">
-        <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight">Create Account</h2>
-        <p className="text-slate-500 mt-2 font-medium">Join Servease today</p>
+        <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight">{t('signup.title') || 'Create Account'}</h2>
+        <p className="text-slate-500 mt-2 font-medium">{t('signup.subtitle') || 'Join Servease today'}</p>
       </div>
       
       <form onSubmit={handleSubmit} className="space-y-5">
         <div>
-          <label className="block text-sm font-bold text-slate-700 mb-2">Full Name</label>
+          <label className="block text-sm font-bold text-slate-700 mb-2">{t('Full Name') || 'Full Name'}</label>
           <input 
             type="text" 
             required 
@@ -58,7 +60,7 @@ export default function Signup() {
           />
         </div>
         <div>
-          <label className="block text-sm font-bold text-slate-700 mb-2">Email Address</label>
+          <label className="block text-sm font-bold text-slate-700 mb-2">{t('Email Address') || 'Email Address'}</label>
           <input 
             type="email" 
             required 
@@ -69,7 +71,7 @@ export default function Signup() {
           />
         </div>
         <div>
-          <label className="block text-sm font-bold text-slate-700 mb-2">Password</label>
+          <label className="block text-sm font-bold text-slate-700 mb-2">{t('Password') || 'Password'}</label>
           <input 
             type="password" 
             required 
@@ -81,15 +83,15 @@ export default function Signup() {
         </div>
         
         <div className="pt-2">
-          <label className="block text-sm font-bold text-slate-700 mb-3">I am a...</label>
+          <label className="block text-sm font-bold text-slate-700 mb-3">{t('signup.iam') || 'I am a...'}</label>
           <div className="grid grid-cols-2 gap-4">
             <label className={`flex flex-col items-center justify-center p-4 border-2 rounded-xl cursor-pointer transition-all ${roleInput === 'customer' ? 'border-primary-500 bg-primary-50 text-primary-700' : 'border-slate-200 hover:border-slate-300 text-slate-500'}`}>
               <input type="radio" name="role" value="customer" className="sr-only" checked={roleInput === 'customer'} onChange={(e) => setRoleInput(e.target.value)} />
-              <span className="font-bold">User</span>
+              <span className="font-bold">{t('signup.user') || 'User'}</span>
             </label>
             <label className={`flex flex-col items-center justify-center p-4 border-2 rounded-xl cursor-pointer transition-all ${roleInput === 'shopkeeper' ? 'border-primary-500 bg-primary-50 text-primary-700' : 'border-slate-200 hover:border-slate-300 text-slate-500'}`}>
               <input type="radio" name="role" value="shopkeeper" className="sr-only" checked={roleInput === 'shopkeeper'} onChange={(e) => setRoleInput(e.target.value)} />
-              <span className="font-bold">Shopkeeper</span>
+              <span className="font-bold">{t('signup.shopkeeper') || 'Shopkeeper'}</span>
             </label>
           </div>
         </div>
@@ -101,14 +103,14 @@ export default function Signup() {
           type="submit" 
           className="w-full bg-gradient-to-r from-primary-600 to-primary-500 hover:from-primary-700 hover:to-primary-600 text-white font-bold py-4 rounded-xl shadow-lg shadow-primary-500/30 transition-all disabled:opacity-50 mt-6"
         >
-          {loading ? 'Creating account...' : 'Create Account'}
+          {loading ? (t('signup.creating') || 'Creating Account...') : (t('navbar.sign_up') || 'Sign Up')}
         </motion.button>
       </form>
       
       <div className="mt-8 text-center text-sm text-slate-500 font-medium">
-        Already have an account? 
+        {t('signup.have_account') || 'Already have an account?'}
         <Link to="/login" className="text-primary-600 hover:text-primary-700 font-bold ml-1 transition-colors relative after:absolute after:bottom-0 after:left-0 after:h-[2px] after:w-full after:bg-primary-600 after:scale-x-0 hover:after:scale-x-100 after:transition-transform after:origin-left">
-          Log In
+          {t('login.sign_in') || 'Sign In'}
         </Link>
       </div>
     </motion.div>
