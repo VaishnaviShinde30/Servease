@@ -1,0 +1,1 @@
+const fs = require('fs'); const glob = require('glob'); const files = glob.sync('src/**/*.{jsx,js}'); files.forEach(f => { let content = fs.readFileSync(f, 'utf8'); if (content.includes('slate')) { content = content.replace(/slate/g, 'raisin'); fs.writeFileSync(f, content); console.log('Updated', f); } });

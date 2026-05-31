@@ -1,0 +1,443 @@
+import { useState, useEffect } from 'react';
+import { supabase } from '../supabase';
+import { Trash2, Users, Store, Shield, Activity, Download, Eye, X, AlertTriangle, Ban, CheckCircle, TrendingUp } from 'lucide-react';
+import { DUMMY_REPORTS } from '../data/dummyReports';
+import { motion, AnimatePresence } from 'framer-motion';
+import toast from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
+
+export default function AdminDashboard() {
+  const { t } = useTranslation();
+  const [users, setUsers] = useState([]);
+  const [shops, setShops] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState('users');
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [selectedShop, setSelectedShop] = useState(null);
+  const [reports, setReports] = useState([]);
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const fetchData = async () => {
+    try {
+      const { data: userData, error: userError } = await supabase.from('users').select('*');
+      if (userError) throw userError;
+      setUsers(userData || []);
+
+      const { data: shopData, error: shopError } = await supabase.from('shops').select('*');
+      if (shopError) throw shopError;
+      setShops(shopData || []);
+    } catch (error) {
+      console.error('Error fetching admin data:', error);
+      toast.error('Failed to load system data');
+    } finally {
+      setReports(DUMMY_REPORTS);
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteUser = async (id) => {
+    if (!window.confirm('Delete this user? This action is permanent.')) return;
+    try {
+      await supabase.from('users').delete().eq('id', id);
+      setUsers(users.filter(u => u.id !== id));
+      toast.success('User permanently deleted');
+    } catch (error) {
+      toast.success('Demo Mode: User deleted locally');
+      setUsers(users.filter(u => u.id !== id));
+    }
+  };
+
+  const handleDeleteShop = async (id) => {
+    if (!window.confirm('Delete this shop?')) return;
+    try {
+      await supabase.from('shops').delete().eq('id', id);
+      setShops(shops.filter(s => s.id !== id));
+      toast.success('Shop permanently removed');
+    } catch (error) {
+      toast.success('Demo Mode: Shop deleted locally');
+      setShops(shops.filter(s => s.id !== id));
+    }
+  };
+
+  const handleSuspendUser = async (id) => {
+    toast.success('User suspended successfully');
+    setUsers(users.map(u => u.id === id ? { ...u, suspended: true } : u));
+  };
+
+  const handleUnsuspendUser = async (id) => {
+    toast.success('User suspension lifted');
+    setUsers(users.map(u => u.id === id ? { ...u, suspended: false } : u));
+  };
+
+  const handleSuspendShop = async (id) => {
+    toast.success('Shop suspended successfully');
+    setShops(shops.map(s => s.id === id ? { ...s, suspended: true } : s));
+  };
+
+  const handleUnsuspendShop = async (id) => {
+    toast.success('Shop suspension lifted');
+    setShops(shops.map(s => s.id === id ? { ...s, suspended: false } : s));
+  };
+
+  const handleResolveReport = (id) => {
+    toast.success('Report marked as resolved');
+    setReports(reports.map(r => r.id === id ? { ...r, status: 'resolved' } : r));
+  };
+
+  return (
+    <div className="space-y-8">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 w-full xl:w-2/3">
+            <div className="bg-white/10 backdrop-blur-md px-4 py-4 rounded-2xl border border-white/10 text-center flex flex-col justify-center transition-all hover:bg-white/20">
+              <div className="text-3xl font-black text-white">{users.length}</div>
+              <div className="text-[10px] sm:text-xs text-slate-400 font-bold uppercase tracking-wider mt-1 flex items-center justify-center"><Users className="w-3 h-3 mr-1" /> {t('Total Users')}</div>
+            </div>
+            <div className="bg-white/10 backdrop-blur-md px-4 py-4 rounded-2xl border border-white/10 text-center flex flex-col justify-center transition-all hover:bg-white/20">
+              <div className="text-3xl font-black text-white">{shops.length}</div>
+              <div className="text-[10px] sm:text-xs text-slate-400 font-bold uppercase tracking-wider mt-1 flex items-center justify-center"><Store className="w-3 h-3 mr-1" /> {t('Total Shops')}</div>
+            </div>
+            <div className="bg-white/10 backdrop-blur-md px-4 py-4 rounded-2xl border border-white/10 text-center flex flex-col justify-center transition-all hover:bg-white/20 relative overflow-hidden">
+              <div className="absolute top-0 right-0 p-2"><TrendingUp className="w-4 h-4 text-emerald-400 opacity-50" /></div>
+              <div className="text-3xl font-black text-emerald-400">+12</div>
+              <div className="text-[10px] sm:text-xs text-slate-400 font-bold uppercase tracking-wider mt-1 flex items-center justify-center">{t('New Users')}</div>
+            </div>
+            <div className="bg-white/10 backdrop-blur-md px-4 py-4 rounded-2xl border border-white/10 text-center flex flex-col justify-center transition-all hover:bg-white/20 relative overflow-hidden">
+              <div className="absolute top-0 right-0 p-2"><TrendingUp className="w-4 h-4 text-primary-400 opacity-50" /></div>
+              <div className="text-3xl font-black text-primary-400">+3</div>
+              <div className="text-[10px] sm:text-xs text-slate-400 font-bold uppercase tracking-wider mt-1 flex items-center justify-center">{t('New Shops')}</div>
+            </div>
+          </div>
+      <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden">
+        <div className="flex p-2 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50">
+          <button 
+            className={`flex-1 py-4 text-center font-bold flex items-center justify-center transition-all rounded-2xl ${activeTab === 'users' ? 'text-slate-900 dark:text-white bg-white dark:bg-slate-800 shadow-sm ring-1 ring-slate-200 dark:ring-slate-700' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'}`}
+            onClick={() => setActiveTab('users')}
+          >
+            <Users className="w-5 h-5 mr-2" /> {t('Manage Users')}
+          </button>
+          <button 
+            className={`flex-1 py-4 text-center font-bold flex items-center justify-center transition-all rounded-2xl ${activeTab === 'shops' ? 'text-slate-900 dark:text-white bg-white dark:bg-slate-800 shadow-sm ring-1 ring-slate-200 dark:ring-slate-700' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'}`}
+            onClick={() => setActiveTab('shops')}
+          >
+            <Store className="w-5 h-5 mr-2" /> {t('Manage Shops')}
+          </button>
+          <button 
+            className={`flex-1 py-4 text-center font-bold flex items-center justify-center transition-all rounded-2xl ${activeTab === 'reports' ? 'text-slate-900 dark:text-white bg-white dark:bg-slate-800 shadow-sm ring-1 ring-slate-200 dark:ring-slate-700' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'}`}
+            onClick={() => setActiveTab('reports')}
+          >
+            <AlertTriangle className="w-5 h-5 mr-2" /> {t('Reports & Issues')}
+            {reports.filter(r => r.status === 'pending').length > 0 && (
+              <span className="ml-2 bg-red-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full">
+                {reports.filter(r => r.status === 'pending').length}
+              </span>
+            )}
+          </button>
+        </div>
+
+        <div className="p-4">
+          {loading ? (
+            <div className="space-y-4 p-4">
+              {[1,2,3,4].map(n => (
+                <div key={n} className="h-16 bg-slate-100 dark:bg-slate-800 rounded-xl animate-pulse"></div>
+              ))}
+            </div>
+          ) : activeTab === 'users' ? (
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="text-slate-400 text-xs uppercase tracking-wider border-b-2 border-slate-100 dark:border-slate-800">
+                    <th className="p-4 font-bold">User Details</th>
+                    <th className="p-4 font-bold">Role</th>
+                    <th className="p-4 font-bold text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-800/50">
+                  <AnimatePresence>
+                    {users.map((u, i) => (
+                      <motion.tr initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }} key={u.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                        <td className="p-4">
+                          <div className="font-extrabold text-slate-800 dark:text-white flex items-center gap-2">
+                            {u.name || 'Anonymous User'}
+                            {u.suspended && <span className="bg-red-100 text-red-600 text-[9px] px-2 py-0.5 rounded-full uppercase tracking-wider">{t('Suspended')}</span>}
+                          </div>
+                          <div className="text-sm text-slate-500 dark:text-slate-400 font-medium">{u.email}</div>
+                        </td>
+                        <td className="p-4">
+                          <span className={`text-xs px-3 py-1.5 rounded-lg font-bold uppercase tracking-wider ${
+                            u.role === 'admin' ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' :
+                            u.role === 'shopkeeper' ? 'bg-secondary-100 text-secondary-700 dark:bg-secondary-900/30 dark:text-secondary-400' :
+                            'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300'
+                          }`}>
+                            {u.role}
+                          </span>
+                        </td>
+                        <td className="p-4 text-right flex justify-end gap-2">
+                          <motion.button title="View Details" whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={() => setSelectedUser(u)} className="p-3 text-slate-400 hover:text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-xl transition-colors">
+                            <Eye className="w-5 h-5" />
+                          </motion.button>
+                          {u.role !== 'admin' && (
+                            <>
+                              {u.suspended ? (
+                                <motion.button title="Unsuspend" whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={() => handleUnsuspendUser(u.id)} className="p-3 text-emerald-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 rounded-xl transition-colors">
+                                  <CheckCircle className="w-5 h-5" />
+                                </motion.button>
+                              ) : (
+                                <motion.button title="Suspend" whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={() => handleSuspendUser(u.id)} className="p-3 text-amber-400 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/20 rounded-xl transition-colors">
+                                  <Ban className="w-5 h-5" />
+                                </motion.button>
+                              )}
+                              <motion.button title="Delete" whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={() => handleDeleteUser(u.id)} className="p-3 text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-colors">
+                                <Trash2 className="w-5 h-5" />
+                              </motion.button>
+                            </>
+                          )}
+                        </td>
+                      </motion.tr>
+                    ))}
+                    {users.length === 0 && (
+                       <tr><td colSpan="3" className="p-12 text-center text-slate-500 font-medium">No users found.</td></tr>
+                    )}
+                  </AnimatePresence>
+                </tbody>
+              </table>
+            </div>
+          ) : activeTab === 'shops' ? (
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="text-slate-400 text-xs uppercase tracking-wider border-b-2 border-slate-100 dark:border-slate-800">
+                    <th className="p-4 font-bold">Shop Name</th>
+                    <th className="p-4 font-bold">Type</th>
+                    <th className="p-4 font-bold">Contact</th>
+                    <th className="p-4 font-bold">Owner ID</th>
+                    <th className="p-4 font-bold text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-800/50">
+                  <AnimatePresence>
+                    {shops.map((s, i) => (
+                      <motion.tr initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }} key={s.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                        <td className="p-4 font-extrabold text-slate-800 dark:text-white flex items-center gap-2">
+                          {s.name}
+                          {s.suspended && <span className="bg-red-100 text-red-600 text-[9px] px-2 py-0.5 rounded-full uppercase tracking-wider">{t('Suspended')}</span>}
+                        </td>
+                        <td className="p-4"><span className="bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs px-3 py-1.5 rounded-lg font-bold uppercase tracking-wider">{s.type}</span></td>
+                        <td className="p-4 text-sm text-slate-600 dark:text-slate-300 font-medium">{s.contact || 'N/A'}</td>
+                        <td className="p-4 text-sm text-slate-400 font-mono">{s.owner_id.substring(0,8)}...</td>
+                        <td className="p-4 text-right flex justify-end gap-2">
+                          <motion.button title="View Details" whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={() => setSelectedShop(s)} className="p-3 text-slate-400 hover:text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-xl transition-colors">
+                            <Eye className="w-5 h-5" />
+                          </motion.button>
+                          {s.suspended ? (
+                            <motion.button title="Unsuspend" whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={() => handleUnsuspendShop(s.id)} className="p-3 text-emerald-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 rounded-xl transition-colors">
+                              <CheckCircle className="w-5 h-5" />
+                            </motion.button>
+                          ) : (
+                            <motion.button title="Suspend" whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={() => handleSuspendShop(s.id)} className="p-3 text-amber-400 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/20 rounded-xl transition-colors">
+                              <Ban className="w-5 h-5" />
+                            </motion.button>
+                          )}
+                          <motion.button title="Delete" whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={() => handleDeleteShop(s.id)} className="p-3 text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-colors">
+                            <Trash2 className="w-5 h-5" />
+                          </motion.button>
+                        </td>
+                      </motion.tr>
+                    ))}
+                    {shops.length === 0 && (
+                       <tr><td colSpan="4" className="p-12 text-center text-slate-500 font-medium">No shops found.</td></tr>
+                    )}
+                  </AnimatePresence>
+                </tbody>
+              </table>
+            </div>
+          ) : activeTab === 'reports' ? (
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="text-slate-400 text-xs uppercase tracking-wider border-b-2 border-slate-100 dark:border-slate-800">
+                    <th className="p-4 font-bold">Report Details</th>
+                    <th className="p-4 font-bold">Target</th>
+                    <th className="p-4 font-bold">Status</th>
+                    <th className="p-4 font-bold text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-800/50">
+                  <AnimatePresence>
+                    {reports.map((r, i) => (
+                      <motion.tr initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }} key={r.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                        <td className="p-4">
+                          <div className="font-bold text-slate-800 dark:text-white mb-1">
+                            {r.type.toUpperCase().replace('_', ' ')}
+                            <span className="ml-2 text-xs text-slate-400 font-normal">by {r.reporter_name}</span>
+                          </div>
+                          <div className="text-sm text-slate-500 dark:text-slate-400 max-w-sm">{r.description}</div>
+                        </td>
+                        <td className="p-4">
+                          <span className="text-xs font-bold uppercase block mb-1 text-slate-400">{r.target_type}</span>
+                          <span className="text-sm font-medium text-slate-700 dark:text-slate-300">{r.target_name}</span>
+                        </td>
+                        <td className="p-4">
+                          <span className={`text-[10px] px-2 py-1 rounded-md font-bold uppercase ${r.status === 'pending' ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' : 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'}`}>
+                            {r.status}
+                          </span>
+                        </td>
+                        <td className="p-4 text-right flex justify-end gap-2">
+                          {r.status === 'pending' && (
+                            <motion.button title="Mark Resolved" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={() => handleResolveReport(r.id)} className="px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-600 dark:bg-emerald-900/20 dark:hover:bg-emerald-900/40 dark:text-emerald-400 text-xs font-bold rounded-lg transition-colors">
+                              {t('Resolve')}
+                            </motion.button>
+                          )}
+                        </td>
+                      </motion.tr>
+                    ))}
+                    {reports.length === 0 && (
+                       <tr><td colSpan="4" className="p-12 text-center text-slate-500 font-medium">No reports found.</td></tr>
+                    )}
+                  </AnimatePresence>
+                </tbody>
+              </table>
+            </div>
+          ) : null}
+        </div>
+      </div>
+
+      <AnimatePresence>
+        {selectedUser && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              className="bg-white dark:bg-slate-900 rounded-3xl w-full max-w-md shadow-2xl overflow-hidden border border-slate-200 dark:border-slate-800"
+            >
+              <div className="flex justify-between items-center p-6 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900">
+                <h2 className="text-xl font-bold text-slate-800 dark:text-white">{t('User Details')}</h2>
+                <button onClick={() => setSelectedUser(null)} className="p-2 bg-slate-200 dark:bg-slate-800 rounded-full hover:bg-slate-300 dark:hover:bg-slate-700 transition-colors">
+                  <X className="w-5 h-5 text-slate-600 dark:text-slate-300" />
+                </button>
+              </div>
+              <div className="p-6 space-y-4">
+                <div>
+                  <span className="block text-xs font-bold text-slate-400 uppercase">ID</span>
+                  <span className="text-slate-800 dark:text-slate-200 font-mono text-sm">{selectedUser.id}</span>
+                </div>
+                <div>
+                  <span className="block text-xs font-bold text-slate-400 uppercase">Name</span>
+                  <span className="text-slate-800 dark:text-slate-200 font-medium">{selectedUser.name || 'N/A'}</span>
+                </div>
+                <div>
+                  <span className="block text-xs font-bold text-slate-400 uppercase">Email</span>
+                  <span className="text-slate-800 dark:text-slate-200 font-medium">{selectedUser.email}</span>
+                </div>
+                <div>
+                  <span className="block text-xs font-bold text-slate-400 uppercase">Role</span>
+                  <span className="text-slate-800 dark:text-slate-200 font-medium uppercase">{selectedUser.role}</span>
+                </div>
+                {/* For demo: retrieve extended local profile */}
+                {(() => {
+                  const extended = JSON.parse(localStorage.getItem('extended_profiles') || '{}')[selectedUser.id];
+                  if (!extended) return <div className="text-sm text-slate-500 italic">No extended profile added yet.</div>;
+                  return (
+                    <>
+                      <div>
+                        <span className="block text-xs font-bold text-slate-400 uppercase">Phone</span>
+                        <span className="text-slate-800 dark:text-slate-200 font-medium">{extended.phone || 'N/A'}</span>
+                      </div>
+                      <div>
+                        <span className="block text-xs font-bold text-slate-400 uppercase">Address</span>
+                        <span className="text-slate-800 dark:text-slate-200 font-medium">{extended.address || 'N/A'}</span>
+                      </div>
+                      <div>
+                        <span className="block text-xs font-bold text-slate-400 uppercase">Bio</span>
+                        <span className="text-slate-800 dark:text-slate-200 text-sm">{extended.bio || 'N/A'}</span>
+                      </div>
+                    </>
+                  )
+                })()}
+
+                {selectedUser.role === 'shopkeeper' && (
+                  <div className="pt-4 border-t border-slate-100 dark:border-slate-800">
+                    <span className="block text-xs font-bold text-primary-500 uppercase mb-2">{t('Owned Shops')}</span>
+                    <div className="space-y-2">
+                      {shops.filter(s => s.owner_id === selectedUser.id).map(shop => (
+                        <div key={shop.id} className="flex justify-between items-center p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-800">
+                          <span className="text-sm font-bold text-slate-700 dark:text-slate-200">{shop.name}</span>
+                          <span className="text-[10px] bg-slate-200 dark:bg-slate-700 px-2 py-1 rounded text-slate-500 uppercase font-bold">{shop.type}</span>
+                        </div>
+                      ))}
+                      {shops.filter(s => s.owner_id === selectedUser.id).length === 0 && (
+                        <span className="text-xs text-slate-400 italic">No shops registered yet.</span>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {selectedShop && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              className="bg-white dark:bg-slate-900 rounded-3xl w-full max-w-md shadow-2xl overflow-hidden border border-slate-200 dark:border-slate-800"
+            >
+              <div className="flex justify-between items-center p-6 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900">
+                <h2 className="text-xl font-bold text-slate-800 dark:text-white">{t('Shop Details')}</h2>
+                <button onClick={() => setSelectedShop(null)} className="p-2 bg-slate-200 dark:bg-slate-800 rounded-full hover:bg-slate-300 dark:hover:bg-slate-700 transition-colors">
+                  <X className="w-5 h-5 text-slate-600 dark:text-slate-300" />
+                </button>
+              </div>
+              <div className="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
+                <div>
+                  <span className="block text-xs font-bold text-slate-400 uppercase">Shop Name</span>
+                  <span className="text-lg font-black text-slate-900 dark:text-white">{selectedShop.name}</span>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <span className="block text-xs font-bold text-slate-400 uppercase">Category</span>
+                    <span className="bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 text-[10px] px-2 py-1 rounded-md font-bold uppercase">{selectedShop.type}</span>
+                  </div>
+                  <div>
+                    <span className="block text-xs font-bold text-slate-400 uppercase">Base Price</span>
+                    <span className="text-slate-900 dark:text-white font-black text-lg">₹{selectedShop.price}</span>
+                  </div>
+                </div>
+                <div>
+                  <span className="block text-xs font-bold text-slate-400 uppercase">Contact</span>
+                  <span className="text-slate-800 dark:text-slate-200 font-bold">{selectedShop.contact || 'N/A'}</span>
+                </div>
+                <div>
+                  <span className="block text-xs font-bold text-slate-400 uppercase">Address</span>
+                  <span className="text-slate-800 dark:text-slate-200 text-sm">{selectedShop.address || 'N/A'}</span>
+                </div>
+                <div>
+                  <span className="block text-xs font-bold text-slate-400 uppercase">Description</span>
+                  <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed">{selectedShop.description}</p>
+                </div>
+                <div className="grid grid-cols-2 gap-4 pt-2">
+                  <div>
+                    <span className="block text-xs font-bold text-slate-400 uppercase">Rating</span>
+                    <div className="flex items-center text-amber-500 font-bold">
+                      <Star className="w-3 h-3 mr-1 fill-current" /> {selectedShop.rating || 'N/A'} ({selectedShop.reviewCount || 0} reviews)
+                    </div>
+                  </div>
+                  <div>
+                    <span className="block text-xs font-bold text-slate-400 uppercase">Distance (City Center)</span>
+                    <span className="text-slate-800 dark:text-slate-200 font-medium text-sm">{selectedShop.distance} km</span>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}

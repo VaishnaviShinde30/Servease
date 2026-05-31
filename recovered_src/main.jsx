@@ -1,0 +1,1 @@
+"import App from './App.jsx'\nimport './index.css'\nimport './i18n'"
