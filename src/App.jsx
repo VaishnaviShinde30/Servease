@@ -9,6 +9,8 @@ import UserDashboard from './pages/UserDashboard';
 import LandingPage from './pages/LandingPage';
 import Profile from './pages/Profile';
 import NotFound from './pages/NotFound';
+import ForgotPassword from './pages/ForgotPassword';
+import UpdatePassword from './pages/UpdatePassword';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 
@@ -48,6 +50,8 @@ function AppRoutes() {
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/update-password" element={<UpdatePassword />} />
           <Route path="/profile" element={
             <ProtectedRoute>
               <Profile />

@@ -96,9 +96,61 @@ const htmlContent = `
         </div>
     </div>
 
+    <!-- 2.5 Use Case Diagram -->
+    <div class="section">
+        <h2>3. Use Case Diagram</h2>
+        <div class="mermaid">
+        flowchart LR
+            Customer([Customer])
+            Shopkeeper([Shopkeeper])
+            Admin([Admin])
+
+            subgraph System [Servease Platform]
+                direction TB
+                UC1(Search & Filter Services)
+                UC2(View Recommendations)
+                UC3(Get Directions)
+                UC4(Manage Shop Profile)
+                UC5(View Analytics)
+                UC6(Manage Users & Shops)
+                UC7(Authentication)
+            end
+
+            Customer --> UC1
+            Customer --> UC2
+            Customer --> UC3
+            Customer --> UC7
+
+            Shopkeeper --> UC4
+            Shopkeeper --> UC5
+            Shopkeeper --> UC7
+
+            Admin --> UC6
+            Admin --> UC7
+        </div>
+    </div>
+
+    <!-- 2.6 Sequence Diagram -->
+    <div class="section">
+        <h2>4. Sequence Diagram (Search & Recommendation)</h2>
+        <div class="mermaid">
+        sequenceDiagram
+            actor U as User
+            participant F as Frontend (React)
+            participant B as Backend (Supabase)
+            
+            U->>F: Enter Search Query & Location
+            F->>B: Fetch Shops from Database
+            B-->>F: Return Shop Data Array
+            F->>F: Filter by Category, Rating, Price
+            F->>F: Apply Scoring Algorithm (Distance, Price, Rating)
+            F-->>U: Display Top Ranked Services
+        </div>
+    </div>
+
     <!-- 3. CFD -->
     <div class="section">
-        <h2>3. Context Flow Diagram (CFD)</h2>
+        <h2>5. Context Flow Diagram (CFD)</h2>
         <div class="mermaid">
         flowchart TD
             Start((Start)) --> AuthCheck{Is Authenticated?}
@@ -114,7 +166,7 @@ const htmlContent = `
 
     <!-- 4. DFD 0 -->
     <div class="section">
-        <h2>4. Data Flow Diagram (DFD) - Level 0</h2>
+        <h2>6. Data Flow Diagram (DFD) - Level 0</h2>
         <div class="mermaid">
         flowchart LR
             User([Customer])
@@ -136,7 +188,7 @@ const htmlContent = `
 
     <!-- 5. DFD 1 -->
     <div class="section">
-        <h2>5. Data Flow Diagram (DFD) - Level 1</h2>
+        <h2>7. Data Flow Diagram (DFD) - Level 1</h2>
         <div class="mermaid">
         flowchart TD
             User([Customer])
@@ -164,7 +216,7 @@ const htmlContent = `
     <!-- CODE SNIPPETS -->
     
     <div class="section">
-        <h2>6. Code: Database Connection</h2>
+        <h2>8. Code: Database Connection</h2>
         <pre><code class="language-javascript">
 // src/supabase.js
 import { createClient } from "@supabase/supabase-js"
@@ -179,7 +231,7 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey)
     </div>
 
     <div class="section">
-        <h2>7. Code: Authentication & Role Management</h2>
+        <h2>9. Code: Authentication & Role Management</h2>
         <pre><code class="language-javascript">
 // src/context/AuthContext.jsx
 import React, { createContext, useContext, useEffect, useState } from "react";
@@ -219,7 +271,7 @@ export function AuthProvider({ children }) {
     </div>
 
     <div class="section">
-        <h2>8. Code: Search & Recommendation Algorithm</h2>
+        <h2>10. Code: Search & Recommendation Algorithm</h2>
         <pre><code class="language-javascript">
 // src/pages/UserDashboard.jsx
 const getRecommendations = () => {
