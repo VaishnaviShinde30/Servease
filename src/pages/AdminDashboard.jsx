@@ -1,12 +1,14 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../supabase';
-import { Trash2, Users, Store, Shield, Activity, Download, Eye, X, AlertTriangle, Ban, CheckCircle, TrendingUp } from 'lucide-react';
+import { Trash2, Users, Store, Shield, Activity, Download, Eye, X, AlertTriangle, Ban, CheckCircle, TrendingUp, MessageSquare, Star } from 'lucide-react';
 import { DUMMY_REPORTS } from '../data/dummyReports';
 import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { DUMMY_SHOPS } from '../data/dummyShops';
+import { getFeedback } from '../utils/feedbackManager';
+import { getReports, resolveReport } from '../utils/reportManager';
 
 const DUMMY_USERS = [
   { id: 'usr-1', name: 'John Doe', email: 'john@example.com', role: 'customer', suspended: false },
@@ -42,6 +44,7 @@ export default function AdminDashboard() {
   const [selectedUser, setSelectedUser] = useState(null);
   const [selectedShop, setSelectedShop] = useState(null);
   const [reports, setReports] = useState([]);
+  const [allFeedbacks, setAllFeedbacks] = useState([]);
   const [isAddUserOpen, setIsAddUserOpen] = useState(false);
   const [isAddShopOpen, setIsAddShopOpen] = useState(false);
   const [newUser, setNewUser] = useState({ name: '', email: '', role: 'customer' });
@@ -50,6 +53,19 @@ export default function AdminDashboard() {
   useEffect(() => {
     fetchData();
   }, []);
+
+  useEffect(() => {
+    if (activeTab === 'feedback') {
+      const fb = getFeedback();
+      const sortedFb = fb.sort((a, b) => new Date(b.date) - new Date(a.date));
+      // Try to attach shop names dynamically if possible
+      const enrichedFb = sortedFb.map(f => {
+        const matchingShop = shops.find(s => s.id === f.shopId);
+        return { ...f, shopName: matchingShop ? matchingShop.name : f.shopId };
+      });
+      setAllFeedbacks(enrichedFb);
+    }
+  }, [activeTab, shops]);
 
   const fetchData = async () => {
     try {
@@ -65,7 +81,7 @@ export default function AdminDashboard() {
       setUsers(DUMMY_USERS);
       setShops(DUMMY_SHOPS);
     } finally {
-      setReports(DUMMY_REPORTS);
+      setReports(getReports());
       setLoading(false);
     }
   };
@@ -116,7 +132,8 @@ export default function AdminDashboard() {
 
   const handleResolveReport = (id) => {
     toast.success('Report marked as resolved');
-    setReports(reports.map(r => r.id === id ? { ...r, status: 'resolved' } : r));
+    const updatedReports = resolveReport(id);
+    setReports(updatedReports);
   };
 
   const handleAddUser = (e) => {
@@ -203,6 +220,12 @@ export default function AdminDashboard() {
                 {reports.filter(r => r.status === 'pending').length}
               </span>
             )}
+          </button>
+          <button 
+            className={`flex-1 py-4 text-center font-bold flex items-center justify-center transition-all rounded-2xl ${activeTab === 'feedback' ? 'text-slate-900 dark:text-white bg-white dark:bg-slate-800 shadow-sm ring-1 ring-slate-200 dark:ring-slate-700' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'}`}
+            onClick={() => setActiveTab('feedback')}
+          >
+            <MessageSquare className="w-5 h-5 mr-2" /> {t('Global Feedback')}
           </button>
         </div>
 
@@ -429,6 +452,35 @@ export default function AdminDashboard() {
                   </AnimatePresence>
                 </tbody>
               </table>
+            </div>
+          ) : activeTab === 'feedback' ? (
+            <div className="overflow-x-auto p-4 space-y-4">
+              {allFeedbacks.length === 0 ? (
+                <div className="bg-white dark:bg-slate-900 rounded-3xl p-8 text-center border border-slate-200 dark:border-slate-800">
+                  <MessageSquare className="w-12 h-12 text-slate-300 dark:text-slate-700 mx-auto mb-4" />
+                  <h3 className="text-xl font-bold text-slate-700 dark:text-slate-300 mb-2">No feedback available</h3>
+                </div>
+              ) : (
+                allFeedbacks.map(fb => (
+                  <div key={fb.id} className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-slate-100 dark:border-slate-700">
+                    <div className="flex justify-between items-start mb-3">
+                      <div>
+                        <h4 className="font-bold text-slate-800 dark:text-white text-lg">{fb.userName} <span className="text-sm font-medium text-slate-500 dark:text-slate-400">({fb.userId})</span></h4>
+                        <span className="text-xs font-semibold text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/30 px-2 py-1 rounded-md mt-1 inline-block">
+                          Target: {fb.shopName}
+                        </span>
+                      </div>
+                      <div className="text-right">
+                        <div className="flex items-center text-amber-500 font-bold bg-amber-50 dark:bg-amber-900/20 px-2 py-1 rounded-lg">
+                          <Star className="w-4 h-4 fill-amber-500 mr-1" /> {fb.rating}
+                        </div>
+                        <div className="text-xs text-slate-400 mt-2">{new Date(fb.date).toLocaleDateString()}</div>
+                      </div>
+                    </div>
+                    <p className="text-slate-600 dark:text-slate-300 italic">"{fb.comment}"</p>
+                  </div>
+                ))
+              )}
             </div>
           ) : null}
         </div>

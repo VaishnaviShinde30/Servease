@@ -9,6 +9,9 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { useTranslation } from 'react-i18next';
 import { isShopOpen } from '../utils/timeUtils';
+import { addFeedback } from '../utils/feedbackManager';
+import { useAuth } from '../context/AuthContext';
+import HelpSupport from '../components/HelpSupport';
 
 // Fix for default marker icon in leaflet
 delete L.Icon.Default.prototype._getIconUrl;
@@ -41,6 +44,7 @@ function MapUpdater({ center, zoom = 14 }) {
 
 export default function UserDashboard() {
   const { t } = useTranslation();
+  const { user } = useAuth();
   const [shops, setShops] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filterType, setFilterType] = useState('All');
@@ -131,6 +135,9 @@ export default function UserDashboard() {
       });
       setShops(updatedShops);
       localStorage.setItem('demo_shops', JSON.stringify(updatedShops.filter(s => !DUMMY_SHOPS.find(d => d.id === s.id))));
+      
+      // Save the feedback globally
+      addFeedback(selectedShop.id, user?.id || 'anonymous', user?.email || 'Anonymous User', rating, review);
       
       toast.success('Thank you for your feedback!');
       setSelectedShop(null);
@@ -524,6 +531,7 @@ export default function UserDashboard() {
           </motion.div>
         )}
       </AnimatePresence>
+      <HelpSupport />
     </div>
   );
 }

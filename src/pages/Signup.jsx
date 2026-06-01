@@ -25,12 +25,21 @@ export default function Signup() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!import.meta.env.VITE_SUPABASE_URL) {
+      toast.error('Environment variables missing! Please add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in Vercel.');
+      return;
+    }
+    
     try {
       setLoading(true);
       await signup(email, password, name, roleInput);
       toast.success('Account created successfully!');
     } catch (err) {
-      toast.error(err.message || 'Failed to create account');
+      if (err.message && err.message.includes('fetch')) {
+        toast.error('Network Error: Please check your Vercel Environment Variables (VITE_SUPABASE_URL)');
+      } else {
+        toast.error(err.message || 'Failed to create account');
+      }
       setLoading(false);
     }
   };

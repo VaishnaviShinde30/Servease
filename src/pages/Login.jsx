@@ -23,12 +23,21 @@ export default function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!import.meta.env.VITE_SUPABASE_URL) {
+      toast.error('Environment variables missing! Please add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in Vercel.');
+      return;
+    }
+    
     try {
       setLoading(true);
       await login(email, password);
       toast.success('Successfully logged in!');
     } catch (err) {
-      toast.error(err.message || 'Failed to log in');
+      if (err.message && err.message.includes('fetch')) {
+        toast.error('Network Error: Please check your Vercel Environment Variables (VITE_SUPABASE_URL)');
+      } else {
+        toast.error(err.message || 'Failed to log in');
+      }
       setLoading(false);
     }
   };

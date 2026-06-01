@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../supabase';
 import { useAuth } from '../context/AuthContext';
-import { Plus, Edit2, Trash2, MapPin, Store, Package, BarChart2, TrendingUp, Users } from 'lucide-react';
+import { Plus, Edit2, Trash2, MapPin, Store, Package, BarChart2, TrendingUp, Users, MessageSquare, Star } from 'lucide-react';
 import { DUMMY_SHOPS } from '../data/dummyShops';
+import { getFeedbackForShop } from '../utils/feedbackManager';
 import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
+import HelpSupport from '../components/HelpSupport';
 
 export default function ShopkeeperDashboard() {
   const { t } = useTranslation();
@@ -14,6 +16,7 @@ export default function ShopkeeperDashboard() {
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('shops');
+  const [feedbacks, setFeedbacks] = useState([]);
   
   const [formData, setFormData] = useState({ id: null, name: '', type: '', price: '', description: '', lat: '', lng: '', address: '', contact: '', openingTime: '', closingTime: '' });
 
@@ -34,6 +37,19 @@ export default function ShopkeeperDashboard() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (activeTab === 'feedback' && shops.length > 0) {
+      const allMyFeedback = [];
+      shops.forEach(shop => {
+        const shopFeedback = getFeedbackForShop(shop.id);
+        allMyFeedback.push(...shopFeedback.map(fb => ({...fb, shopName: shop.name})));
+      });
+      // Sort by newest first
+      allMyFeedback.sort((a, b) => new Date(b.date) - new Date(a.date));
+      setFeedbacks(allMyFeedback);
+    }
+  }, [activeTab, shops]);
 
   const handleSaveShop = async (e) => {
     e.preventDefault();
@@ -170,6 +186,12 @@ export default function ShopkeeperDashboard() {
         >
           <BarChart2 className="w-4 h-4 mr-2" /> {t('Shop Insights')}
         </button>
+        <button 
+          onClick={() => setActiveTab('feedback')}
+          className={`flex items-center px-6 py-2.5 rounded-xl font-bold transition-all ${activeTab === 'feedback' ? 'bg-white dark:bg-slate-700 text-primary-600 dark:text-primary-400 shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
+        >
+          <MessageSquare className="w-4 h-4 mr-2" /> Customer Feedback
+        </button>
       </div>
 
       {activeTab === 'shops' && (
@@ -276,6 +298,38 @@ export default function ShopkeeperDashboard() {
         </div>
       )}
 
+      {activeTab === 'feedback' && (
+        <div className="space-y-4">
+          {feedbacks.length === 0 ? (
+            <div className="bg-white dark:bg-slate-900 rounded-3xl p-8 text-center border border-slate-200 dark:border-slate-800">
+              <MessageSquare className="w-12 h-12 text-slate-300 dark:text-slate-700 mx-auto mb-4" />
+              <h3 className="text-xl font-bold text-slate-700 dark:text-slate-300 mb-2">No feedback yet</h3>
+              <p className="text-slate-500">When customers review your shops, they will appear here.</p>
+            </div>
+          ) : (
+            feedbacks.map(fb => (
+              <div key={fb.id} className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-slate-100 dark:border-slate-700">
+                <div className="flex justify-between items-start mb-3">
+                  <div>
+                    <h4 className="font-bold text-slate-800 dark:text-white text-lg">{fb.userName}</h4>
+                    <span className="text-xs font-semibold text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/30 px-2 py-1 rounded-md mt-1 inline-block">
+                      {fb.shopName}
+                    </span>
+                  </div>
+                  <div className="text-right">
+                    <div className="flex items-center text-amber-500 font-bold bg-amber-50 dark:bg-amber-900/20 px-2 py-1 rounded-lg">
+                      <Star className="w-4 h-4 fill-amber-500 mr-1" /> {fb.rating}
+                    </div>
+                    <div className="text-xs text-slate-400 mt-2">{new Date(fb.date).toLocaleDateString()}</div>
+                  </div>
+                </div>
+                <p className="text-slate-600 dark:text-slate-300 italic">"{fb.comment}"</p>
+              </div>
+            ))
+          )}
+        </div>
+      )}
+
       {/* Add/Edit Modal */}
       <AnimatePresence>
         {isModalOpen && (
@@ -370,6 +424,7 @@ export default function ShopkeeperDashboard() {
           </motion.div>
         )}
       </AnimatePresence>
+      <HelpSupport />
     </div>
   );
 }

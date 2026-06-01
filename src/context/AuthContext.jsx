@@ -20,6 +20,11 @@ export function AuthProvider({ children }) {
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (_event === 'PASSWORD_RECOVERY') {
+        window.location.href = '/update-password';
+        return;
+      }
+      
       if (session?.user) {
         fetchUserRole(session.user);
       } else {

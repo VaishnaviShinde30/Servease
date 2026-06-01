@@ -1,5 +1,4 @@
-import { BrowserRouter as Router, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
-import { useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { Toaster } from 'react-hot-toast';
 import Login from './pages/Login';
@@ -41,14 +40,7 @@ function ProtectedRoute({ children, allowedRoles }) {
 function AppRoutes() {
   const { user, role } = useAuth();
   const location = useLocation();
-  const navigate = useNavigate();
   const isLandingPage = location.pathname === '/';
-
-  useEffect(() => {
-    if (window.location.hash && window.location.hash.includes('type=recovery')) {
-      navigate('/update-password' + window.location.hash);
-    }
-  }, [navigate]);
 
   return (
     <div className="min-h-screen flex flex-col font-sans bg-slate-50/50 dark:bg-slate-900">
