@@ -74,7 +74,7 @@ export default function LandingPage() {
                 
                 <div className="flex justify-between items-start mb-4 mt-2">
                   <div>
-                    <h3 className="text-xl font-bold text-slate-800 dark:text-white">{shop.name}</h3>
+                    <h3 className="text-xl font-bold text-slate-800 dark:text-white">{t(`shop_names.${shop.id}`, shop.name)}</h3>
                     <div className="flex items-center mt-1">
                       {isOpen ? (
                         <span className="flex items-center text-xs font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/30 px-2 py-0.5 rounded">
@@ -92,7 +92,7 @@ export default function LandingPage() {
                   <span className="bg-primary-50 dark:bg-primary-900/30 text-primary-700 dark:text-primary-400 text-xs px-3 py-1 rounded-full font-semibold">{t(`shop_types.${shop.type.toLowerCase()}`) || shop.type}</span>
                 </div>
                 
-                <p className="text-slate-500 dark:text-slate-400 text-sm mb-6 line-clamp-2">{shop.description}</p>
+                <p className="text-slate-500 dark:text-slate-400 text-sm mb-6 line-clamp-2">{t(`shop_desc.${shop.id}`, shop.description)}</p>
                 
                 <div className="space-y-3 mb-6">
                   <div className="flex items-center text-slate-700 dark:text-slate-300 text-sm">

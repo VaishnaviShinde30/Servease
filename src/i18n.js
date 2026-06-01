@@ -177,6 +177,13 @@ const resources = {
       'user.no_matches_found': 'No matches found',
       'user.no_matches_subtitle': 'We could not find any services matching your specific filters. Try adjusting them.',
 
+      'shop_names.1': 'Sai Digital Print & Xerox',
+      'shop_desc.1': 'High-speed laser printing, thesis spiral binding, and lamination services. Special discount for bulk college assignments.',
+      'shop_names.2': 'New Bharat Tailoring',
+      'shop_desc.2': 'Expert alteration, custom uniform stitching, and intricate dress materials. 24-hour express delivery available for minor alterations.',
+      'shop_names.3': 'A-1 Plumbing Solutions',
+      'shop_desc.3': 'Expert plumbing repairs, pipe leak fixes, and water heater installation. Quick response time and reliable service across the city.',
+
     }
   },
   hi: {
@@ -353,6 +360,13 @@ const resources = {
       'user.no_matches_found': 'कोई मेल नहीं मिला',
       'user.no_matches_subtitle': 'हम आपके विशिष्ट फ़िल्टर से मेल खाने वाली कोई सेवा नहीं ढूँढ सके। उन्हें समायोजित करने का प्रयास करें।',
 
+      'shop_names.1': 'साई डिजिटल प्रिंट और ज़ेरॉक्स',
+      'shop_desc.1': 'हाई-स्पीड लेजर प्रिंटिंग, थीसिस सर्पिल बाइंडिंग और लेमिनेशन सेवाएं। थोक कॉलेज असाइनमेंट के लिए विशेष छूट।',
+      'shop_names.2': 'न्यू भारत टेलरिंग',
+      'shop_desc.2': 'विशेषज्ञ परिवर्तन, कस्टम वर्दी सिलाई, और जटिल पोशाक सामग्री। मामूली बदलावों के लिए 24 घंटे की एक्सप्रेस डिलीवरी उपलब्ध है।',
+      'shop_names.3': 'ए-१ प्लंबिंग सॉल्यूशंस',
+      'shop_desc.3': 'विशेषज्ञ प्लंबिंग मरम्मत, पाइप रिसाव सुधार, और वॉटर हीटर स्थापना। पूरे शहर में त्वरित प्रतिक्रिया समय और विश्वसनीय सेवा।',
+
     }
   },
   mr: {
@@ -528,6 +542,13 @@ const resources = {
       'user.any_price': 'कोणतीही किंमत',
       'user.no_matches_found': 'काहीही जुळले नाही',
       'user.no_matches_subtitle': 'आम्हाला तुमच्या विशिष्ट फिल्टरशी जुळणारी कोणतीही सेवा सापडली नाही. ते समायोजित करण्याचा प्रयत्न करा.',
+
+      'shop_names.1': 'साई डिजिटल प्रिंट आणि झेरॉक्स',
+      'shop_desc.1': 'हाय-स्पीड लेझर प्रिंटिंग, थीसिस स्पायरल बाइंडिंग आणि लॅमिनेशन सेवा. मोठ्या प्रमाणावर कॉलेज असाइनमेंटसाठी विशेष सवलत.',
+      'shop_names.2': 'न्यू भारत टेलरिंग',
+      'shop_desc.2': 'तज्ञ बदल, कस्टम युनिफॉर्म शिलाई आणि क्लिष्ट ड्रेस साहित्य. किरकोळ बदलांसाठी २४ तास एक्सप्रेस डिलिव्हरी उपलब्ध.',
+      'shop_names.3': 'ए-१ प्लंबिंग सोल्युशन्स',
+      'shop_desc.3': 'तज्ञ प्लंबिंग दुरुस्ती, पाइप गळती दुरुस्ती आणि वॉटर हीटरची स्थापना. शहरभर त्वरित प्रतिसाद आणि विश्वसनीय सेवा.',
 
     }
   }
