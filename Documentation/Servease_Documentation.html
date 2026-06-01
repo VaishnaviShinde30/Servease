@@ -1,0 +1,256 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Servease Project Documentation</title>
+    
+    <!-- Mermaid.js for Diagrams -->
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <script>mermaid.initialize({startOnLoad:true});</script>
+    
+    <!-- Prism.js for Code Highlighting -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-javascript.min.js"></script>
+
+    <style>
+        body {
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-w-6xl;
+            margin: 0 auto;
+            padding: 40px;
+            background-color: #f4f7f6;
+        }
+        h1, h2, h3 { color: #2c3e50; }
+        h1 { text-align: center; border-bottom: 2px solid #3498db; padding-bottom: 10px; }
+        h2 { margin-top: 50px; padding: 10px; background: #e8f4f8; border-left: 5px solid #3498db; }
+        .section { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 30px; }
+        .mermaid { display: flex; justify-content: center; margin: 20px 0; background: white; padding: 20px; border: 1px solid #ddd; border-radius: 8px;}
+        pre { border-radius: 8px !important; }
+    </style>
+</head>
+<body>
+
+    <h1>Servease Project Documentation</h1>
+    <p style="text-align:center;">This page contains all diagrams and code modules required for your final year project presentation. You can directly screenshot the items below.</p>
+
+    <!-- 1. System Architecture -->
+    <div class="section">
+        <h2>1. System Architecture</h2>
+        <div class="mermaid">
+        graph TD
+            Client[Frontend Client React/Vite]
+            Vercel[Vercel Hosting Platform]
+            Supabase[Supabase Backend as a Service]
+            DB[(PostgreSQL Database)]
+            Auth[GoTrue Authentication]
+            Storage[Supabase Storage]
+
+            Client -- "HTTPS Requests" --> Vercel
+            Vercel -- "API Calls" --> Supabase
+            Supabase --> Auth
+            Supabase --> DB
+            Supabase --> Storage
+        </div>
+    </div>
+
+    <!-- 2. Database Schema -->
+    <div class="section">
+        <h2>2. Database Schema (ER Diagram)</h2>
+        <div class="mermaid">
+        erDiagram
+            PROFILES ||--o{ SHOPS : owns
+            PROFILES {
+                uuid id PK
+                string role
+                string email
+                timestamp created_at
+            }
+            SHOPS ||--o{ REVIEWS : receives
+            SHOPS {
+                uuid id PK
+                uuid owner_id FK
+                string name
+                string type
+                float price
+                float rating
+                string location
+                string openingTime
+                string closingTime
+            }
+            REVIEWS {
+                uuid id PK
+                uuid shop_id FK
+                uuid user_id FK
+                int rating
+                string comment
+            }
+        </div>
+    </div>
+
+    <!-- 3. CFD -->
+    <div class="section">
+        <h2>3. Context Flow Diagram (CFD)</h2>
+        <div class="mermaid">
+        flowchart TD
+            Start((Start)) --> AuthCheck{Is Authenticated?}
+            AuthCheck -->|No| LoginSignup[Login / Signup]
+            LoginSignup --> RoleCheck
+            AuthCheck -->|Yes| RoleCheck{Role?}
+            
+            RoleCheck -->|Customer| UserFlow[Search Shops -> Apply Filters -> View Recommendations -> Logout]
+            RoleCheck -->|Shopkeeper| ShopFlow[Manage Shops -> Update Pricing -> View Analytics -> Logout]
+            RoleCheck -->|Admin| AdminFlow[Manage Users -> View Platform Health -> Resolve Issues -> Logout]
+        </div>
+    </div>
+
+    <!-- 4. DFD 0 -->
+    <div class="section">
+        <h2>4. Data Flow Diagram (DFD) - Level 0</h2>
+        <div class="mermaid">
+        flowchart LR
+            User([Customer])
+            Shopkeeper([Shopkeeper])
+            Admin([Administrator])
+            
+            System(("Servease System"))
+            
+            User -- "Search queries, Location, Filters" --> System
+            System -- "Shop Recommendations, Directions" --> User
+            
+            Shopkeeper -- "Shop Details, Prices, Timings" --> System
+            System -- "Analytics, Search Appearances" --> Shopkeeper
+            
+            Admin -- "Management Commands" --> System
+            System -- "System Reports, User Data" --> Admin
+        </div>
+    </div>
+
+    <!-- 5. DFD 1 -->
+    <div class="section">
+        <h2>5. Data Flow Diagram (DFD) - Level 1</h2>
+        <div class="mermaid">
+        flowchart TD
+            User([Customer])
+            Shopkeeper([Shopkeeper])
+            Admin([Admin])
+
+            DB[(PostgreSQL Database)]
+
+            P1(("1.0 Identity"))
+            P2(("2.0 Discovery"))
+            P3(("3.0 Shops"))
+
+            User & Shopkeeper & Admin -->|Credentials| P1
+            P1 <-->|Read/Write| DB
+
+            User -->|Location & Filters| P2
+            P2 <-->|Fetch Shops| DB
+            P2 -->|Recommendations| User
+
+            Shopkeeper -->|Shop Details| P3
+            P3 <-->|Update Shop| DB
+        </div>
+    </div>
+
+    <!-- CODE SNIPPETS -->
+    
+    <div class="section">
+        <h2>6. Code: Database Connection</h2>
+        <pre><code class="language-javascript">
+// src/supabase.js
+import { createClient } from "@supabase/supabase-js"
+
+// Initialize environment variables securely
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
+
+// Create the unified database connection client
+export const supabase = createClient(supabaseUrl, supabaseAnonKey)
+        </code></pre>
+    </div>
+
+    <div class="section">
+        <h2>7. Code: Authentication & Role Management</h2>
+        <pre><code class="language-javascript">
+// src/context/AuthContext.jsx
+import React, { createContext, useContext, useEffect, useState } from "react";
+import { supabase } from "../supabase";
+
+export function AuthProvider({ children }) {
+  const [user, setUser] = useState(null);
+  const [role, setRole] = useState(null);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) fetchUserRole(session.user);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.user) {
+        fetchUserRole(session.user);
+      } else {
+        setUser(null);
+        setRole(null);
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const fetchUserRole = async (user) => {
+    setUser(user);
+    if (user.email === "admin@servease.com") {
+      setRole("admin");
+    } else {
+      const { data } = await supabase.from("profiles").select("role").eq("id", user.id).single();
+      setRole(data?.role || "customer");
+    }
+  };
+}
+        </code></pre>
+    </div>
+
+    <div class="section">
+        <h2>8. Code: Search & Recommendation Algorithm</h2>
+        <pre><code class="language-javascript">
+// src/pages/UserDashboard.jsx
+const getRecommendations = () => {
+  // 1. Initial Filtering
+  const filteredShops = shopsWithDistance.filter(shop => {
+    const matchesSearch = shop.name.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesType = selectedType === "All" || shop.type === selectedType;
+    const matchesPrice = filterPrice === "all" ? true : shop.price < 500;
+    const matchesRating = shop.rating >= filterRating;
+    return matchesSearch && matchesType && matchesPrice && matchesRating;
+  });
+
+  if (filteredShops.length === 0) return [];
+
+  // 2. Normalization for Smart Recommendation Scoring
+  const maxP = Math.max(...filteredShops.map(s => s.price));
+  const maxD = Math.max(...filteredShops.map(s => s.distance || 0));
+
+  // 3. Weighted Scoring System
+  const scoredShops = filteredShops.map(shop => {
+    const normDistance = shop.distance ? (shop.distance / maxD) : 0;
+    const normPrice = shop.price ? (shop.price / maxP) : 0;
+    const normRating = shop.rating / 5;
+
+    // Recommendation Formula: Higher Score is Better
+    // Weights: Distance (40%), Price (30%), Rating (30%)
+    const score = ((1 - normDistance) * 0.4) + ((1 - normPrice) * 0.3) + (normRating * 0.3);
+    return { ...shop, score };
+  });
+
+  // 4. Sort and return the highest scored shops
+  return scoredShops.sort((a, b) => b.score - a.score);
+};
+        </code></pre>
+    </div>
+
+</body>
+</html>
