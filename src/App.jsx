@@ -42,21 +42,20 @@ if (!localStorage.getItem('shop_visits_seeded')) {
 function ProtectedRoute({ children, allowedRoles }) {
   const { user, role, loading } = useAuth();
 
-  if (loading) return (
+  // Show spinner while auth is loading OR while user exists but role hasn't loaded yet
+  if (loading || (user && role === null)) return (
     <div className="flex items-center justify-center min-h-[60vh]">
       <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-600"></div>
     </div>
   );
+
   if (!user) return <Navigate to="/login" replace />;
+
   if (allowedRoles && !allowedRoles.includes(role)) {
-    return (
-      <div className="p-8 flex flex-col items-center justify-center min-h-[50vh]">
-        <div className="bg-red-50 text-red-600 p-6 rounded-2xl border border-red-100 max-w-md text-center shadow-lg">
-          <h3 className="text-xl font-bold mb-2">Access Denied</h3>
-          <p className="text-sm">You don't have permission to view this page.</p>
-        </div>
-      </div>
-    );
+    // Redirect to correct dashboard instead of showing Access Denied
+    if (role === 'admin') return <Navigate to="/admin" replace />;
+    if (role === 'shopkeeper') return <Navigate to="/shopkeeper" replace />;
+    return <Navigate to="/user" replace />;
   }
 
   return children;
@@ -107,7 +106,7 @@ function AppRoutes() {
           } />
 
           <Route path="/user" element={
-            <ProtectedRoute allowedRoles={['customer', 'user']}>
+            <ProtectedRoute allowedRoles={['customer', 'user', 'Customer', 'User']}>
               <UserDashboard />
             </ProtectedRoute>
           } />
@@ -116,7 +115,7 @@ function AppRoutes() {
           <Route path="*" element={<NotFound />} />
         </Routes>
       </main>
-      {showFooter && <Footer />}
+      <Footer />
     </div>
   );
 }
