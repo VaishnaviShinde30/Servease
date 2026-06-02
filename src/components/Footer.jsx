@@ -1,9 +1,12 @@
 import { Hexagon, Mail, Phone, MapPin, Twitter, Facebook, Instagram, Linkedin, Compass } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 
 export default function Footer() {
   const { t } = useTranslation();
+  const location = useLocation();
+  const hideOn = ['/login', '/signup', '/forgot-password', '/update-password', '/user', '/admin', '/shopkeeper'];
+  if (hideOn.some(p => location.pathname.startsWith(p))) return null;
   return (
     <footer className="bg-slate-900 text-slate-400 py-12 mt-auto border-t border-slate-800">
       <div className="container mx-auto px-4 max-w-7xl">
