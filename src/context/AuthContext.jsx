@@ -37,6 +37,21 @@ export function AuthProvider({ children }) {
     return () => subscription.unsubscribe();
   }, []);
 
+  const saveLoggedUserToDemo = (user, role) => {
+    const existingDemoUsers = JSON.parse(localStorage.getItem('demo_users') || '[]');
+    const userExists = existingDemoUsers.some(u => u.email === user.email || u.id === user.id);
+    if (!userExists) {
+      const newUserRecord = {
+        id: user.id,
+        name: user.user_metadata?.name || user.email.split('@')[0],
+        email: user.email,
+        role: role,
+        suspended: false
+      };
+      localStorage.setItem('demo_users', JSON.stringify([...existingDemoUsers, newUserRecord]));
+    }
+  };
+
   const fetchUserRole = async (user) => {
     try {
       setUser(user);
@@ -44,6 +59,7 @@ export function AuthProvider({ children }) {
       // STRICT ADMIN REQUIREMENT: Hardcode admin email
       if (user.email === 'vaishnavishinde7494@gmail.com') {
         setRole('admin');
+        saveLoggedUserToDemo(user, 'admin');
         setLoading(false);
         return;
       }
@@ -57,20 +73,24 @@ export function AuthProvider({ children }) {
       if (error) throw error;
       if (data) {
         setRole(data.role);
+        saveLoggedUserToDemo(user, data.role);
       }
     } catch (error) {
       console.error('Error fetching role:', error.message);
       // Dummy logic for fallback/testing without real supabase DB connection
       const localRole = localStorage.getItem(`role_${user.id}`);
+      let finalRole = 'user';
       if (localRole) {
-        setRole(localRole);
+        finalRole = localRole;
       } else if (user.email === 'admin@servease.com') {
-        setRole('admin');
+        finalRole = 'admin';
       } else if (user.email.includes('shop')) {
-        setRole('shopkeeper');
+        finalRole = 'shopkeeper';
       } else {
-        setRole('user');
+        finalRole = 'user';
       }
+      setRole(finalRole);
+      saveLoggedUserToDemo(user, finalRole);
     } finally {
       setLoading(false);
     }
