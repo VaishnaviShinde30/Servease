@@ -652,11 +652,21 @@ export default function AdminDashboard() {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <span className="block text-xs font-bold text-slate-400 uppercase">{t('admin.category')}</span>
-                    <span className="bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 text-[10px] px-2 py-1 rounded-md font-bold uppercase">{selectedShop.type}</span>
+                    <span className="bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 text-[10px] px-2 py-1 rounded-md font-bold uppercase">{selectedShop.type || 'N/A'}</span>
                   </div>
                   <div>
                     <span className="block text-xs font-bold text-slate-400 uppercase">{t('Base Price')}</span>
                     <span className="text-slate-900 dark:text-white font-black text-lg">₹{selectedShop.price}</span>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <span className="block text-xs font-bold text-slate-400 uppercase">Opening Time</span>
+                    <span className="text-slate-800 dark:text-slate-200 font-medium">{selectedShop.opening_time || selectedShop.openingTime || 'N/A'}</span>
+                  </div>
+                  <div>
+                    <span className="block text-xs font-bold text-slate-400 uppercase">Closing Time</span>
+                    <span className="text-slate-800 dark:text-slate-200 font-medium">{selectedShop.closing_time || selectedShop.closingTime || 'N/A'}</span>
                   </div>
                 </div>
                 <div>
@@ -669,19 +679,27 @@ export default function AdminDashboard() {
                 </div>
                 <div>
                   <span className="block text-xs font-bold text-slate-400 uppercase">{t('shop.description')}</span>
-                  <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed">{selectedShop.description}</p>
+                  <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed">{selectedShop.description || 'No description provided.'}</p>
                 </div>
                 <div className="grid grid-cols-2 gap-4 pt-2">
                   <div>
                     <span className="block text-xs font-bold text-slate-400 uppercase">{t('admin.rating')}</span>
                     <div className="flex items-center text-amber-500 font-bold">
-                      <Star className="w-3 h-3 mr-1 fill-current" /> {selectedShop.rating || 'N/A'} ({selectedShop.reviewCount || 0} reviews)
+                      <Star className="w-3 h-3 mr-1 fill-current" /> {selectedShop.rating ?? 'N/A'} ({selectedShop.reviewCount || 0} reviews)
                     </div>
                   </div>
                   <div>
-                    <span className="block text-xs font-bold text-slate-400 uppercase">{t('admin.distance')}</span>
-                    <span className="text-slate-800 dark:text-slate-200 font-medium text-sm">{selectedShop.distance} km</span>
+                    <span className="block text-xs font-bold text-slate-400 uppercase">Status</span>
+                    {selectedShop.suspended ? (
+                      <span className="text-xs text-red-600 font-bold bg-red-50 dark:bg-red-900/20 px-2 py-1 rounded">Suspended</span>
+                    ) : (
+                      <span className="text-xs text-emerald-600 font-bold bg-emerald-50 dark:bg-emerald-900/20 px-2 py-1 rounded">Active</span>
+                    )}
                   </div>
+                </div>
+                <div className="pt-2 border-t border-slate-100 dark:border-slate-800">
+                  <span className="block text-xs font-bold text-slate-400 uppercase mb-1">Owner ID</span>
+                  <span className="text-slate-500 dark:text-slate-400 font-mono text-xs break-all">{selectedShop.owner_id}</span>
                 </div>
               </div>
             </motion.div>

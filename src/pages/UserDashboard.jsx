@@ -103,18 +103,23 @@ export default function UserDashboard() {
 
   const fetchShops = async () => {
     try {
-      const { data, error } = await supabase.from('shops').select('*');
-      if (error) throw error;
-      
-      const dbShops = data && data.length > 0 ? data : DUMMY_SHOPS;
+      let dbShops = [];
+      try {
+        const { data, error } = await supabase.from('shops').select('*');
+        if (error) throw error;
+        dbShops = data || [];
+      } catch (err) {
+        console.error('Error fetching shops from supabase:', err);
+      }
+
       const localShops = JSON.parse(localStorage.getItem('demo_shops') || '[]');
-      const uniqueLocal = localShops.filter(ls => !dbShops.find(ds => ds.id === ls.id));
-      setShops([...dbShops, ...uniqueLocal]);
-      
-    } catch (error) {
-      console.error('Error fetching shops:', error);
-      const localShops = JSON.parse(localStorage.getItem('demo_shops') || '[]');
-      setShops([...DUMMY_SHOPS, ...localShops]);
+      const deletedShops = JSON.parse(localStorage.getItem('deleted_shops') || '[]');
+
+      // Merge: DUMMY_SHOPS base + local (shopkeeper-created) + db, deduped by id, filter deleted
+      const merged = [...DUMMY_SHOPS, ...localShops, ...dbShops];
+      const unique = Array.from(new Map(merged.map(s => [s.id, s])).values());
+      const final = unique.filter(s => !deletedShops.includes(s.id));
+      setShops(final);
     } finally {
       setLoading(false);
     }

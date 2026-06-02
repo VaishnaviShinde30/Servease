@@ -89,7 +89,7 @@ export default function LandingPage() {
                       )}
                     </div>
                   </div>
-                  <span className="bg-primary-50 dark:bg-primary-900/30 text-primary-700 dark:text-primary-400 text-xs px-3 py-1 rounded-full font-semibold">{t(`shop_types.${shop.type.toLowerCase()}`) || shop.type}</span>
+                  <span className="bg-primary-50 dark:bg-primary-900/30 text-primary-700 dark:text-primary-400 text-xs px-3 py-1 rounded-full font-semibold">{shop.type}</span>
                 </div>
                 
                 <p className="text-slate-500 dark:text-slate-400 text-sm mb-6 line-clamp-2">{t(`shop_desc.${shop.id}`, shop.description)}</p>
