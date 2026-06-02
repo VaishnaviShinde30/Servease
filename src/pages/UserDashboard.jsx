@@ -45,7 +45,7 @@ function MapUpdater({ center, zoom = 14 }) {
 }
 
 export default function UserDashboard() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { user } = useAuth();
   const { isDarkMode } = useTheme();
   const [shops, setShops] = useState([]);

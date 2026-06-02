@@ -5,9 +5,10 @@ import { useTranslation } from 'react-i18next';
 export default function Footer() {
   const { t } = useTranslation();
   const location = useLocation();
+  const cleanPath = location.pathname.toLowerCase().replace(/\/$/, '') || '/';
   const hideExact = ['/login', '/signup', '/forgot-password', '/update-password'];
   const hidePrefix = ['/user', '/admin', '/shopkeeper'];
-  if (hideExact.includes(location.pathname) || hidePrefix.some(p => location.pathname.startsWith(p))) return null;
+  if (hideExact.includes(cleanPath) || hidePrefix.some(p => cleanPath.startsWith(p))) return null;
   return (
     <footer className="bg-slate-900 text-slate-400 py-12 mt-auto border-t border-slate-800">
       <div className="container mx-auto px-4 max-w-7xl">
