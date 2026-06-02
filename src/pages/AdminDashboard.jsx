@@ -62,20 +62,29 @@ export default function AdminDashboard() {
 
   const fetchData = async () => {
     try {
-      const { data: userData, error: userError } = await supabase.from('users').select('*');
-      if (userError) throw userError;
-      setUsers(userData || []);
+      let dbUsers = [];
+      let dbShops = [];
+      try {
+        const { data: userData, error: userError } = await supabase.from('users').select('*');
+        if (userError) throw userError;
+        dbUsers = userData || [];
+      } catch (err) {
+        console.error('Error fetching admin users:', err);
+      }
+      
+      try {
+        const { data: shopData, error: shopError } = await supabase.from('shops').select('*');
+        if (shopError) throw shopError;
+        dbShops = shopData || [];
+      } catch (err) {
+        console.error('Error fetching admin shops:', err);
+      }
 
-      const { data: shopData, error: shopError } = await supabase.from('shops').select('*');
-      if (shopError) throw shopError;
-      setShops(shopData || []);
-    } catch (error) {
-      console.error('Error fetching admin data, using fallback data:', error);
       const localUsers = JSON.parse(localStorage.getItem('demo_users') || '[]');
       const localShops = JSON.parse(localStorage.getItem('demo_shops') || '[]');
       
-      const mergedUsers = [...DUMMY_USERS, ...localUsers];
-      const mergedShops = [...DUMMY_SHOPS, ...localShops];
+      const mergedUsers = [...DUMMY_USERS, ...localUsers, ...dbUsers];
+      const mergedShops = [...DUMMY_SHOPS, ...localShops, ...dbShops];
 
       // Filter out duplicates by email/id
       const uniqueUsers = Array.from(new Map(mergedUsers.map(u => [u.email || u.id, u])).values());

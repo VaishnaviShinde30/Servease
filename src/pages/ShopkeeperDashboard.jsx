@@ -32,13 +32,24 @@ export default function ShopkeeperDashboard() {
 
   const fetchMyShops = async () => {
     try {
-      const { data, error } = await supabase.from('shops').select('*').eq('owner_id', user.id);
-      if (error) throw error;
-      setShops(data && data.length > 0 ? data : []); 
-    } catch (error) {
-      console.error('Error fetching shops:', error);
+      let dbShops = [];
+      try {
+        const { data, error } = await supabase.from('shops').select('*').eq('owner_id', user.id);
+        if (error) throw error;
+        dbShops = data || [];
+      } catch (err) {
+        console.error('Error fetching shops:', err);
+      }
+      
       const localShops = JSON.parse(localStorage.getItem('demo_shops') || '[]');
-      setShops(localShops.filter(s => s.owner_id === user.id)); 
+      const myLocalShops = localShops.filter(s => s.owner_id === user.id);
+      
+      const mergedShops = [...myLocalShops, ...dbShops];
+      const uniqueShops = Array.from(new Map(mergedShops.map(s => [s.id, s])).values());
+      const deletedShops = JSON.parse(localStorage.getItem('deleted_shops') || '[]');
+      const finalShops = uniqueShops.filter(s => !deletedShops.includes(s.id));
+      
+      setShops(finalShops);
     } finally {
       setLoading(false);
     }
@@ -110,66 +121,59 @@ export default function ShopkeeperDashboard() {
       toast.loading('Translating shop details...', { id: 'saveShop' });
       payload = await translateShopDynamic(payload);
 
-      if (formData.id) {
-        const { error } = await supabase.from('shops').update(payload).eq('id', formData.id);
-        if (error) throw error;
-        setShops(shops.map(s => s.id === formData.id ? { ...s, ...payload } : s));
-        toast.success('Shop updated successfully!', { id: 'saveShop' });
-      } else {
-        const { data, error } = await supabase.from('shops').insert([payload]).select();
-        if (error) throw error;
-        if (data && data.length > 0) setShops([...shops, data[0]]);
-        else throw new Error("No data returned");
-        toast.success('New shop added successfully!', { id: 'saveShop' });
+      let savedData = payload;
+      let finalId = formData.id;
+
+      try {
+        if (formData.id) {
+          const { error } = await supabase.from('shops').update(payload).eq('id', formData.id);
+          if (error) throw error;
+        } else {
+          const { data, error } = await supabase.from('shops').insert([payload]).select();
+          if (error) throw error;
+          if (data && data.length > 0) {
+            savedData = data[0];
+            finalId = savedData.id;
+          }
+        }
+      } catch (err) {
+        console.error("Supabase saving failed, using local storage", err);
       }
-      setIsModalOpen(false);
-    } catch (error) {
-      toast.success('Demo Mode: Translating and saving locally!', { id: 'saveShop' });
-      const stringPrice = String(formData.price);
-      const finalType = formData.type;
-      
-      let existingShop = shops.find(s => s.id === formData.id) || {};
-      
-      let payload = { 
-        ...existingShop,
-        id: formData.id || Date.now().toString(), 
-        name: formData.name,
-        type: finalType,
-        description: formData.description,
-        address: formData.address,
-        owner_id: user.id,
-        price: stringPrice,
-        contact: formData.contact || '',
-        openingTime: formData.openingTime || '',
-        closingTime: formData.closingTime || '',
-        rating: formData.id ? existingShop.rating || 4.0 : 0 
+
+      savedData = {
+        ...savedData,
+        id: finalId || Date.now().toString(),
+        rating: formData.id ? (shops.find(s => s.id === formData.id)?.rating || 4.0) : 0,
+        openingTime: savedData.opening_time || payload.opening_time,
+        closingTime: savedData.closing_time || payload.closing_time
       };
 
-      // Translate dynamically
-      payload = await translateShopDynamic(payload);
-      
+      // Sync to React state
       let updatedShops;
       if (formData.id) {
-        updatedShops = shops.map(s => s.id === formData.id ? payload : s);
+        updatedShops = shops.map(s => s.id === formData.id ? savedData : s);
       } else {
-        updatedShops = [...shops, payload];
+        updatedShops = [...shops, savedData];
       }
       setShops(updatedShops);
       
       // Sync to localStorage for User module
       const localShops = JSON.parse(localStorage.getItem('demo_shops') || '[]');
       if (formData.id) {
-        // If it was already in localStorage, update it. Otherwise, add it (in case we're editing a DUMMY_SHOP)
         const existsLocally = localShops.some(s => s.id === formData.id);
         if (existsLocally) {
-          localStorage.setItem('demo_shops', JSON.stringify(localShops.map(s => s.id === formData.id ? payload : s)));
+          localStorage.setItem('demo_shops', JSON.stringify(localShops.map(s => s.id === formData.id ? savedData : s)));
         } else {
-          localStorage.setItem('demo_shops', JSON.stringify([...localShops, payload]));
+          localStorage.setItem('demo_shops', JSON.stringify([...localShops, savedData]));
         }
       } else {
-        localStorage.setItem('demo_shops', JSON.stringify([...localShops, payload]));
+        localStorage.setItem('demo_shops', JSON.stringify([...localShops, savedData]));
       }
       
+      toast.success(formData.id ? 'Shop updated successfully!' : 'New shop added successfully!', { id: 'saveShop' });
+      setIsModalOpen(false);
+    } catch (error) {
+      toast.error('An error occurred while saving the shop.', { id: 'saveShop' });
       setIsModalOpen(false);
     }
   };
@@ -178,12 +182,23 @@ export default function ShopkeeperDashboard() {
     if (!window.confirm('Are you sure you want to delete this shop?')) return;
     try {
       await supabase.from('shops').delete().eq('id', id);
-      setShops(shops.filter(s => s.id !== id));
-      toast.success('Shop deleted.');
     } catch (error) {
-      toast.success('Demo Mode: Shop deleted.');
-      setShops(shops.filter(s => s.id !== id));
+      console.error("Supabase delete failed", error);
     }
+    
+    // Always update locally for Demo Mode persistence
+    const newShops = shops.filter(s => s.id !== id);
+    setShops(newShops);
+    
+    const localShops = JSON.parse(localStorage.getItem('demo_shops') || '[]');
+    const newLocalShops = localShops.filter(s => s.id !== id);
+    localStorage.setItem('demo_shops', JSON.stringify(newLocalShops));
+    
+    const deleted = JSON.parse(localStorage.getItem('deleted_shops') || '[]');
+    deleted.push(id);
+    localStorage.setItem('deleted_shops', JSON.stringify(deleted));
+
+    toast.success('Shop deleted.');
   };
 
   const openModal = (shop = null) => {
