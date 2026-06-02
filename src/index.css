@@ -6,6 +6,9 @@
 @tailwind utilities;
 
 @layer base {
+  html {
+    font-size: 90%; /* Scaled down slightly so everything fits */
+  }
   body {
     @apply bg-primary-50 text-slate-900 font-sans antialiased transition-colors duration-300;
   }

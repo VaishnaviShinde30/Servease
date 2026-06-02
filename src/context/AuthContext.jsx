@@ -103,6 +103,17 @@ export function AuthProvider({ children }) {
       // Set fallback role in case DB insert fails or RLS blocks fetch
       localStorage.setItem(`role_${data.user.id}`, selectedRole);
       
+      // Save user to demo_users for Admin Dashboard
+      const existingDemoUsers = JSON.parse(localStorage.getItem('demo_users') || '[]');
+      const newUser = {
+        id: data.user.id,
+        name: name,
+        email: email,
+        role: selectedRole,
+        suspended: false
+      };
+      localStorage.setItem('demo_users', JSON.stringify([...existingDemoUsers, newUser]));
+
       // Insert into users table
       try {
         const { error: dbError } = await supabase.from('users').insert([

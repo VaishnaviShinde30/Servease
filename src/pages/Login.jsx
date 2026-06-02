@@ -4,12 +4,14 @@ import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
+import { Eye, EyeOff } from 'lucide-react';
 
 export default function Login() {
   const { t } = useTranslation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const { login, user, role, loading: loadingAuth } = useAuth();
   const navigate = useNavigate();
 
@@ -53,13 +55,13 @@ export default function Login() {
         <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary-100 text-primary-600 mb-6 shadow-inner">
           <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" /></svg>
         </div>
-        <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight">{t('login.welcome') || 'Welcome Back'}</h2>
-        <p className="text-slate-500 mt-2 font-medium">{t('login.subtitle') || 'Sign in to Servease to continue'}</p>
+        <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight">{t('login.welcome')}</h2>
+        <p className="text-slate-500 mt-2 font-medium">{t('login.subtitle')}</p>
       </div>
       
       <form onSubmit={handleSubmit} className="space-y-5">
         <div>
-          <label className="block text-sm font-bold text-slate-700 mb-2">Username</label>
+          <label className="block text-sm font-bold text-slate-700 mb-2">{t('login.username')}</label>
           <input 
             type="email" 
             required 
@@ -71,19 +73,28 @@ export default function Login() {
         </div>
         <div>
           <div className="flex justify-between items-center mb-2">
-            <label className="block text-sm font-bold text-slate-700">{t('Password') || 'Password'}</label>
+            <label className="block text-sm font-bold text-slate-700">{t('Password')}</label>
             <Link to="/forgot-password" className="text-sm font-semibold text-primary-600 hover:text-primary-700 transition-colors">
-              Forgot Password?
+              {t('login.forgot_password')}
             </Link>
           </div>
-          <input 
-            type="password" 
-            required 
-            placeholder="••••••••"
-            className="w-full px-5 py-4 bg-white border border-slate-200 rounded-xl focus:ring-4 focus:ring-primary-500/20 focus:border-primary-500 outline-none transition-all shadow-sm"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
+          <div className="relative">
+            <input 
+              type={showPassword ? "text" : "password"} 
+              required 
+              placeholder="••••••••"
+              className="w-full px-5 py-4 bg-white border border-slate-200 rounded-xl focus:ring-4 focus:ring-primary-500/20 focus:border-primary-500 outline-none transition-all shadow-sm"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+            <button 
+              type="button" 
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 focus:outline-none"
+            >
+              {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+            </button>
+          </div>
         </div>
         
         <motion.button 
@@ -93,14 +104,14 @@ export default function Login() {
           type="submit" 
           className="w-full bg-gradient-to-r from-primary-600 to-primary-500 hover:from-primary-700 hover:to-primary-600 text-white font-bold py-4 rounded-xl shadow-lg shadow-primary-500/30 transition-all disabled:opacity-50 mt-6"
         >
-          {loading ? (t('login.authenticating') || 'Authenticating...') : (t('login.sign_in') || 'Sign In')}
+          {loading ? t('login.authenticating') : t('login.sign_in')}
         </motion.button>
       </form>
       
       <div className="mt-8 text-center text-sm text-slate-500 font-medium">
-        {t('login.no_account') || "Don't have an account?"}
+        {t('login.no_account')}
         <Link to="/signup" className="text-primary-600 hover:text-primary-700 font-bold ml-1 transition-colors relative after:absolute after:bottom-0 after:left-0 after:h-[2px] after:w-full after:bg-primary-600 after:scale-x-0 hover:after:scale-x-100 after:transition-transform after:origin-left">
-          {t('navbar.sign_up') || 'Sign Up'}
+          {t('navbar.sign_up')}
         </Link>
       </div>
     </motion.div>

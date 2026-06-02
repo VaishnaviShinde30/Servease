@@ -3,8 +3,10 @@ import { useAuth } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
 
 export default function ForgotPassword() {
+  const { t } = useTranslation();
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [isSent, setIsSent] = useState(false);
@@ -35,16 +37,16 @@ export default function ForgotPassword() {
         <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-amber-100 text-amber-600 mb-6 shadow-inner">
           <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" /></svg>
         </div>
-        <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight">Reset Password</h2>
+        <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight">{t('forgot.title')}</h2>
         <p className="text-slate-500 mt-2 font-medium">
-          {isSent ? "Check your email for the reset link" : "Enter your email to receive a password reset link"}
+          {isSent ? t('forgot.sent_desc') : t('forgot.form_desc')}
         </p>
       </div>
       
       {!isSent ? (
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
-            <label className="block text-sm font-bold text-slate-700 mb-2">Email Address</label>
+            <label className="block text-sm font-bold text-slate-700 mb-2">{t('profile.email_address')}</label>
             <input 
               type="email" 
               required 
@@ -62,7 +64,7 @@ export default function ForgotPassword() {
             type="submit" 
             className="w-full bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-700 hover:to-amber-600 text-white font-bold py-4 rounded-xl shadow-lg shadow-amber-500/30 transition-all disabled:opacity-50 mt-6"
           >
-            {loading ? 'Sending link...' : 'Send Reset Link'}
+            {loading ? t('forgot.sending') : t('forgot.send_link')}
           </motion.button>
         </form>
       ) : (
@@ -73,16 +75,16 @@ export default function ForgotPassword() {
               whileTap={{ scale: 0.98 }}
               className="w-full bg-slate-800 hover:bg-slate-900 text-white font-bold py-4 rounded-xl shadow-lg transition-all"
             >
-              Return to Login
+              {t('forgot.return_login')}
             </motion.button>
           </Link>
         </div>
       )}
       
       <div className="mt-8 text-center text-sm text-slate-500 font-medium">
-        Remembered your password?
+        {t('forgot.remembered')}
         <Link to="/login" className="text-primary-600 hover:text-primary-700 font-bold ml-1 transition-colors">
-          Sign In
+          {t('login.sign_in')}
         </Link>
       </div>
     </motion.div>

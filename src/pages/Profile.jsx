@@ -74,8 +74,8 @@ export default function Profile() {
             {profileData.name ? profileData.name.charAt(0).toUpperCase() : 'U'}
           </div>
           <div>
-            <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white">{t('My Profile')}</h1>
-            <p className="text-slate-500 font-medium">{t('Manage your personal information')}</p>
+            <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white">{t('profile.title')}</h1>
+            <p className="text-slate-500 font-medium">{t('profile.subtitle')}</p>
           </div>
         </div>
 
@@ -83,7 +83,7 @@ export default function Profile() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2 flex items-center">
-                <User className="w-4 h-4 mr-2 text-slate-400" /> {t('Full Name')}
+                <User className="w-4 h-4 mr-2 text-slate-400" /> {t('profile.full_name')}
               </label>
               <input
                 type="text"
@@ -95,7 +95,7 @@ export default function Profile() {
             </div>
             <div>
               <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2 flex items-center">
-                <Mail className="w-4 h-4 mr-2 text-slate-400" /> {t('Email Address')}
+                <Mail className="w-4 h-4 mr-2 text-slate-400" /> {t('profile.email_address')}
               </label>
               <input
                 type="email"
@@ -106,19 +106,22 @@ export default function Profile() {
             </div>
             <div>
               <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2 flex items-center">
-                <Phone className="w-4 h-4 mr-2 text-slate-400" /> {t('Contact Number')}
+                <Phone className="w-4 h-4 mr-2 text-slate-400" /> {t('profile.contact_number')}
               </label>
               <input
                 type="tel"
                 placeholder="e.g. 9876543210"
                 className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-4 focus:ring-primary-500/20 focus:border-primary-500 outline-none transition-all dark:text-white font-medium"
                 value={profileData.phone}
-                onChange={e => setProfileData({...profileData, phone: e.target.value})}
+                onChange={e => {
+                  const val = e.target.value.replace(/\D/g, '');
+                  if (val.length <= 10) setProfileData({...profileData, phone: val});
+                }}
               />
             </div>
             <div>
               <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2 flex items-center">
-                <MapPin className="w-4 h-4 mr-2 text-slate-400" /> {t('Location / Address')}
+                <MapPin className="w-4 h-4 mr-2 text-slate-400" /> {t('profile.location')}
               </label>
               <input
                 type="text"
@@ -132,7 +135,7 @@ export default function Profile() {
 
           <div>
             <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2 flex items-center">
-              <FileText className="w-4 h-4 mr-2 text-slate-400" /> {t('Bio / Description')}
+              <FileText className="w-4 h-4 mr-2 text-slate-400" /> {t('profile.bio')}
             </label>
             <textarea
               rows="4"
@@ -150,7 +153,7 @@ export default function Profile() {
               className="px-8 py-3 bg-primary-600 hover:bg-primary-700 text-white font-bold rounded-xl shadow-lg shadow-primary-500/30 transition-all flex items-center disabled:opacity-70 disabled:cursor-not-allowed"
             >
               <Save className="w-5 h-5 mr-2" />
-              {loading ? t('Loading...') : t('Save Profile')}
+              {loading ? t('loading') : t('profile.save')}
             </button>
           </div>
         </form>

@@ -17,7 +17,7 @@ export default function Footer() {
               </div>
               <div className="flex flex-col justify-center">
                 <span className="text-xl font-bold text-white tracking-tight leading-none">
-                  Servease
+                  {t('Servease')}
                 </span>
                 <span className="text-[8px] font-semibold text-slate-400 tracking-wider uppercase mt-1">
                   {t('navbar.subtitle') || 'We Recommend, You Decide'}
@@ -68,11 +68,11 @@ export default function Footer() {
               </li>
               <li className="flex items-center space-x-3">
                 <Phone className="w-5 h-5 text-primary-500 shrink-0" />
-                <span>+91 98765 43210</span>
+                <span>{t('footer.phone')}</span>
               </li>
               <li className="flex items-center space-x-3">
                 <Mail className="w-5 h-5 text-primary-500 shrink-0" />
-                <span>support@servease.com</span>
+                <span>{t('footer.email')}</span>
               </li>
             </ul>
           </div>
@@ -80,8 +80,8 @@ export default function Footer() {
 
         {/* Copyright */}
         <div className="pt-8 border-t border-slate-800 text-center text-sm text-slate-500 flex flex-col md:flex-row justify-between items-center">
-          <p>&copy; {new Date().getFullYear()} Servease Inc. All rights reserved.</p>
-          <p className="mt-2 md:mt-0">{t('footer.designed') || 'Designed for Final Year Demonstration'}</p>
+          <p>{t('footer.copyright')}</p>
+          <p className="mt-2 md:mt-0">{t('footer.designed')}</p>
         </div>
       </div>
     </footer>

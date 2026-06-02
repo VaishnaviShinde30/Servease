@@ -3,10 +3,13 @@ import { supabase } from '../supabase';
 import { useAuth } from '../context/AuthContext';
 import { Plus, Edit2, Trash2, MapPin, Store, Package, BarChart2, TrendingUp, Users, MessageSquare, Star } from 'lucide-react';
 import { DUMMY_SHOPS } from '../data/dummyShops';
-import { getFeedbackForShop } from '../utils/feedbackManager';
+import { getFeedbackForShop, addReply } from '../utils/feedbackManager';
 import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
+import { SERVICE_CATEGORIES } from '../utils/categories';
+import { translateShopDynamic } from '../utils/translator';
+import { getVisitsForShop } from '../utils/visitManager';
 import HelpSupport from '../components/HelpSupport';
 
 export default function ShopkeeperDashboard() {
@@ -17,8 +20,11 @@ export default function ShopkeeperDashboard() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('shops');
   const [feedbacks, setFeedbacks] = useState([]);
+  const [visitors, setVisitors] = useState([]);
+  const [replyingTo, setReplyingTo] = useState(null);
+  const [replyText, setReplyText] = useState('');
   
-  const [formData, setFormData] = useState({ id: null, name: '', type: '', price: '', description: '', lat: '', lng: '', address: '', contact: '', openingTime: '', closingTime: '' });
+  const [formData, setFormData] = useState({ id: null, name: '', type: '', price: '', description: '', address: '', contact: '', openingTime: '', closingTime: '' });
 
   useEffect(() => {
     fetchMyShops();
@@ -45,9 +51,18 @@ export default function ShopkeeperDashboard() {
         const shopFeedback = getFeedbackForShop(shop.id);
         allMyFeedback.push(...shopFeedback.map(fb => ({...fb, shopName: shop.name})));
       });
-      // Sort by newest first
       allMyFeedback.sort((a, b) => new Date(b.date) - new Date(a.date));
       setFeedbacks(allMyFeedback);
+    }
+    
+    if (activeTab === 'visitors' && shops.length > 0) {
+      const allVisitors = [];
+      shops.forEach(shop => {
+        const shopVisits = getVisitsForShop(shop.id);
+        allVisitors.push(...shopVisits.map(v => ({...v, shopName: shop.name})));
+      });
+      allVisitors.sort((a, b) => new Date(b.date) - new Date(a.date));
+      setVisitors(allVisitors);
     }
   }, [activeTab, shops]);
 
@@ -73,47 +88,66 @@ export default function ShopkeeperDashboard() {
     }
 
     try {
-      const payload = {
+      const stringPrice = String(formData.price);
+      const finalType = formData.type;
+      
+      let payload = {
         owner_id: user.id,
         name: formData.name,
-        type: formData.type,
-        price: Number(formData.price),
+        type: finalType,
+        price: stringPrice,
         description: formData.description,
         address: formData.address,
         contact: formData.contact || '',
-        openingTime: formData.openingTime || '',
-        closingTime: formData.closingTime || '',
+        opening_time: formData.openingTime || '09:00',
+        closing_time: formData.closingTime || '21:00',
+        rating: formData.id ? undefined : 0, 
         lat: finalLat,
         lng: finalLng,
-        rating: formData.id ? undefined : 0, 
       };
 
+      // Translate dynamically
+      toast.loading('Translating shop details...', { id: 'saveShop' });
+      payload = await translateShopDynamic(payload);
+
       if (formData.id) {
-        await supabase.from('shops').update(payload).eq('id', formData.id);
+        const { error } = await supabase.from('shops').update(payload).eq('id', formData.id);
+        if (error) throw error;
         setShops(shops.map(s => s.id === formData.id ? { ...s, ...payload } : s));
-        toast.success('Shop updated successfully!');
+        toast.success('Shop updated successfully!', { id: 'saveShop' });
       } else {
         const { data, error } = await supabase.from('shops').insert([payload]).select();
         if (error) throw error;
-        if (data) setShops([...shops, data[0]]);
-        else setShops([...shops, { id: Date.now().toString(), ...payload, rating: 0 }]);
+        if (data && data.length > 0) setShops([...shops, data[0]]);
+        else throw new Error("No data returned");
         toast.success('New shop added successfully!', { id: 'saveShop' });
       }
       setIsModalOpen(false);
     } catch (error) {
-      toast.success('Demo Mode: Shop saved locally!', { id: 'saveShop' });
-      const payload = { 
+      toast.success('Demo Mode: Translating and saving locally!', { id: 'saveShop' });
+      const stringPrice = String(formData.price);
+      const finalType = formData.type;
+      
+      let existingShop = shops.find(s => s.id === formData.id) || {};
+      
+      let payload = { 
+        ...existingShop,
         id: formData.id || Date.now().toString(), 
-        ...formData, 
+        name: formData.name,
+        type: finalType,
+        description: formData.description,
+        address: formData.address,
         owner_id: user.id,
-        price: Number(formData.price) || 0,
+        price: stringPrice,
         contact: formData.contact || '',
         openingTime: formData.openingTime || '',
         closingTime: formData.closingTime || '',
-        lat: finalLat,
-        lng: finalLng,
-        rating: formData.id ? 4.0 : 0 
+        rating: formData.id ? existingShop.rating || 4.0 : 0 
       };
+
+      // Translate dynamically
+      payload = await translateShopDynamic(payload);
+      
       let updatedShops;
       if (formData.id) {
         updatedShops = shops.map(s => s.id === formData.id ? payload : s);
@@ -125,7 +159,13 @@ export default function ShopkeeperDashboard() {
       // Sync to localStorage for User module
       const localShops = JSON.parse(localStorage.getItem('demo_shops') || '[]');
       if (formData.id) {
-        localStorage.setItem('demo_shops', JSON.stringify(localShops.map(s => s.id === formData.id ? payload : s)));
+        // If it was already in localStorage, update it. Otherwise, add it (in case we're editing a DUMMY_SHOP)
+        const existsLocally = localShops.some(s => s.id === formData.id);
+        if (existsLocally) {
+          localStorage.setItem('demo_shops', JSON.stringify(localShops.map(s => s.id === formData.id ? payload : s)));
+        } else {
+          localStorage.setItem('demo_shops', JSON.stringify([...localShops, payload]));
+        }
       } else {
         localStorage.setItem('demo_shops', JSON.stringify([...localShops, payload]));
       }
@@ -147,26 +187,39 @@ export default function ShopkeeperDashboard() {
   };
 
   const openModal = (shop = null) => {
-    if (shop) {
-      setFormData(shop);
+    if (shop && shop.id) {
+      setFormData({
+        ...shop,
+        type: shop.type || shop.service_type || '',
+        openingTime: shop.opening_time || shop.openingTime || '',
+        closingTime: shop.closing_time || shop.closingTime || '',
+      });
     } else {
-      setFormData({ id: null, name: '', type: '', price: '', description: '', lat: '', lng: '', address: '', contact: '', openingTime: '', closingTime: '' });
+      setFormData({ type: '', price: '', openingTime: '', closingTime: '' });
     }
     setIsModalOpen(true);
+  };
+
+  const submitReply = (id) => {
+    if (!replyText.trim()) return;
+    const updatedFeedback = addReply(id, replyText);
+    setFeedbacks(feedbacks.map(fb => fb.id === id ? { ...fb, reply: updatedFeedback.reply, replyDate: updatedFeedback.replyDate } : fb));
+    setReplyingTo(null);
+    setReplyText('');
+    toast.success('Reply posted successfully!');
   };
 
   return (
     <div className="space-y-8">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8 bg-white dark:bg-slate-800 p-8 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-700">
         <div>
-          <h1 className="text-4xl font-extrabold text-slate-900 dark:text-white flex items-center tracking-tight">
+          <h1 className="text-4xl font-extrabold text-slate-900 dark:text-white flex items-center tracking-tight mb-1">
             <Store className="w-8 h-8 text-secondary-500 mr-3" /> {t('My Shops')}
           </h1>
-          <h1 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">{t('Shopkeeper Dashboard')}</h1>
-          <p className="text-slate-500 font-medium mt-1">{t('Manage your service listings and business profile.')}</p>
+          <p className="text-slate-500 font-medium">{t('shopkeeper.manage_desc')}</p>
         </div>
         <button 
-          onClick={() => { setFormData({ id: null, name: '', type: '', price: '', description: '', lat: '', lng: '', address: '', contact: '', openingTime: '', closingTime: '' }); setIsModalOpen(true); }}
+          onClick={() => openModal()}
           className="bg-primary-600 hover:bg-primary-700 text-white px-6 py-3 rounded-xl font-bold shadow-lg shadow-primary-500/30 transition-all flex items-center"
         >
           <Plus className="w-5 h-5 mr-2" /> {t('Add New Shop')}
@@ -190,7 +243,13 @@ export default function ShopkeeperDashboard() {
           onClick={() => setActiveTab('feedback')}
           className={`flex items-center px-6 py-2.5 rounded-xl font-bold transition-all ${activeTab === 'feedback' ? 'bg-white dark:bg-slate-700 text-primary-600 dark:text-primary-400 shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
         >
-          <MessageSquare className="w-4 h-4 mr-2" /> Customer Feedback
+          <MessageSquare className="w-4 h-4 mr-2" /> {t('Customer Feedback')}
+        </button>
+        <button 
+          onClick={() => setActiveTab('visitors')}
+          className={`flex items-center px-6 py-2.5 rounded-xl font-bold transition-all ${activeTab === 'visitors' ? 'bg-white dark:bg-slate-700 text-primary-600 dark:text-primary-400 shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
+        >
+          <Users className="w-4 h-4 mr-2" /> {t('Recent Visitors')}
         </button>
       </div>
 
@@ -213,10 +272,10 @@ export default function ShopkeeperDashboard() {
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="text-slate-500 dark:text-slate-400 text-sm border-b-2 border-slate-100 dark:border-slate-700">
-                  <th className="p-4 font-bold uppercase tracking-wider">Shop Info</th>
-                  <th className="p-4 font-bold uppercase tracking-wider">Service Type</th>
-                  <th className="p-4 font-bold uppercase tracking-wider">Base Price</th>
-                  <th className="p-4 font-bold uppercase tracking-wider text-right">Actions</th>
+                  <th className="p-4 font-bold uppercase tracking-wider">{t('Shop Info')}</th>
+                  <th className="p-4 font-bold uppercase tracking-wider">{t('Service Type')}</th>
+                  <th className="p-4 font-bold uppercase tracking-wider">{t('Base Price')}</th>
+                  <th className="p-4 font-bold uppercase tracking-wider text-right">{t('Actions')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -256,12 +315,12 @@ export default function ShopkeeperDashboard() {
             </table>
           </div>
         ) : (
-          <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 flex flex-col items-center justify-center text-center shadow-sm border border-slate-200 dark:border-slate-800 h-64">
+              <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 flex flex-col items-center justify-center text-center shadow-sm border border-slate-200 dark:border-slate-800 h-64">
                 <div className="w-16 h-16 bg-slate-50 dark:bg-slate-800 rounded-full flex items-center justify-center mb-4">
                   <Package className="w-8 h-8 text-slate-300 dark:text-slate-600" />
                 </div>
                 <h3 className="text-xl font-bold text-slate-700 dark:text-slate-300 mb-2">{t('No shops listed')}</h3>
-                <p className="text-slate-500 text-sm max-w-xs">You haven't listed any services yet. Click the button above to add your first shop.</p>
+                <p className="text-slate-500 text-sm max-w-xs">{t('shopkeeper.no_shops_desc')}</p>
               </div>
         )}
       </div>
@@ -271,29 +330,29 @@ export default function ShopkeeperDashboard() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="bg-white dark:bg-slate-800 rounded-3xl p-6 shadow-sm border border-slate-200 dark:border-slate-700">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="font-bold text-slate-700 dark:text-slate-300">Total Views</h3>
+              <h3 className="font-bold text-slate-700 dark:text-slate-300">{t('shopkeeper.total_views')}</h3>
               <div className="p-2 bg-blue-50 dark:bg-blue-900/30 text-blue-600 rounded-xl"><Users className="w-5 h-5" /></div>
             </div>
             <p className="text-3xl font-black text-slate-900 dark:text-white">{shops.length > 0 ? (shops.length * 142) : 0}</p>
-            <p className="text-sm text-emerald-500 font-bold mt-2 flex items-center"><TrendingUp className="w-3 h-3 mr-1" /> +14% this week</p>
+            <p className="text-sm text-emerald-500 font-bold mt-2 flex items-center"><TrendingUp className="w-3 h-3 mr-1" /> +14% {t('shopkeeper.this_week')}</p>
           </div>
           <div className="bg-white dark:bg-slate-800 rounded-3xl p-6 shadow-sm border border-slate-200 dark:border-slate-700">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="font-bold text-slate-700 dark:text-slate-300">Search Appearances</h3>
+              <h3 className="font-bold text-slate-700 dark:text-slate-300">{t('shopkeeper.search_appearances')}</h3>
               <div className="p-2 bg-purple-50 dark:bg-purple-900/30 text-purple-600 rounded-xl"><BarChart2 className="w-5 h-5" /></div>
             </div>
             <p className="text-3xl font-black text-slate-900 dark:text-white">{shops.length > 0 ? (shops.length * 853) : 0}</p>
-            <p className="text-sm text-emerald-500 font-bold mt-2 flex items-center"><TrendingUp className="w-3 h-3 mr-1" /> +22% this week</p>
+            <p className="text-sm text-emerald-500 font-bold mt-2 flex items-center"><TrendingUp className="w-3 h-3 mr-1" /> +22% {t('shopkeeper.this_week')}</p>
           </div>
           <div className="bg-white dark:bg-slate-800 rounded-3xl p-6 shadow-sm border border-slate-200 dark:border-slate-700">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="font-bold text-slate-700 dark:text-slate-300">Avg. Shop Rating</h3>
+              <h3 className="font-bold text-slate-700 dark:text-slate-300">{t('shopkeeper.avg_rating')}</h3>
               <div className="p-2 bg-amber-50 dark:bg-amber-900/30 text-amber-600 rounded-xl"><Store className="w-5 h-5" /></div>
             </div>
             <p className="text-3xl font-black text-slate-900 dark:text-white">
               {shops.length > 0 ? (shops.reduce((acc, s) => acc + (s.rating || 0), 0) / shops.length).toFixed(1) : '0.0'}
             </p>
-            <p className="text-sm text-slate-500 font-bold mt-2 text-center sm:text-left">Based on {shops.reduce((acc, s) => acc + (s.reviewCount || 0), 0)} total reviews</p>
+            <p className="text-sm text-slate-500 font-bold mt-2 text-center sm:text-left">{t('shopkeeper.based_on')} {shops.reduce((acc, s) => acc + (s.reviewCount || 0), 0)} {t('shopkeeper.total_reviews_text')}</p>
           </div>
         </div>
       )}
@@ -303,8 +362,8 @@ export default function ShopkeeperDashboard() {
           {feedbacks.length === 0 ? (
             <div className="bg-white dark:bg-slate-900 rounded-3xl p-8 text-center border border-slate-200 dark:border-slate-800">
               <MessageSquare className="w-12 h-12 text-slate-300 dark:text-slate-700 mx-auto mb-4" />
-              <h3 className="text-xl font-bold text-slate-700 dark:text-slate-300 mb-2">No feedback yet</h3>
-              <p className="text-slate-500">When customers review your shops, they will appear here.</p>
+              <h3 className="text-xl font-bold text-slate-700 dark:text-slate-300 mb-2">{t('shopkeeper.no_feedback_title')}</h3>
+              <p className="text-slate-500">{t('shopkeeper.no_feedback_desc')}</p>
             </div>
           ) : (
             feedbacks.map(fb => (
@@ -323,9 +382,89 @@ export default function ShopkeeperDashboard() {
                     <div className="text-xs text-slate-400 mt-2">{new Date(fb.date).toLocaleDateString()}</div>
                   </div>
                 </div>
-                <p className="text-slate-600 dark:text-slate-300 italic">"{fb.comment}"</p>
+                <p className="text-slate-600 dark:text-slate-300 italic mb-4">"{fb.comment}"</p>
+                
+                {fb.reply ? (
+                  <div className="ml-8 p-4 bg-slate-50 dark:bg-slate-900/50 rounded-xl border-l-4 border-primary-500">
+                    <div className="flex justify-between items-center mb-1">
+                      <span className="text-xs font-bold text-primary-600 dark:text-primary-400 uppercase tracking-wider">{t('Your Reply')}</span>
+                      <span className="text-[10px] text-slate-400">{new Date(fb.replyDate).toLocaleDateString()}</span>
+                    </div>
+                    <p className="text-sm text-slate-700 dark:text-slate-300">{fb.reply}</p>
+                  </div>
+                ) : (
+                  <div className="mt-4 border-t border-slate-100 dark:border-slate-700 pt-4">
+                    {replyingTo === fb.id ? (
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          value={replyText}
+                          onChange={(e) => setReplyText(e.target.value)}
+                          placeholder={t('Type your reply here...')}
+                          className="flex-1 px-4 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white outline-none focus:border-primary-500"
+                        />
+                        <button onClick={() => submitReply(fb.id)} className="bg-primary-600 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-primary-700">
+                          {t('Send')}
+                        </button>
+                        <button onClick={() => { setReplyingTo(null); setReplyText(''); }} className="bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 px-4 py-2 rounded-lg text-sm font-bold">
+                          {t('Cancel')}
+                        </button>
+                      </div>
+                    ) : (
+                      <button onClick={() => setReplyingTo(fb.id)} className="text-sm text-primary-600 dark:text-primary-400 font-bold hover:underline flex items-center">
+                        <MessageSquare className="w-4 h-4 mr-1" /> {t('Reply to Customer')}
+                      </button>
+                    )}
+                  </div>
+                )}
               </div>
             ))
+          )}
+        </div>
+      )}
+
+      {activeTab === 'visitors' && (
+        <div className="space-y-4">
+          {visitors.length === 0 ? (
+            <div className="bg-white dark:bg-slate-900 rounded-3xl p-8 text-center border border-slate-200 dark:border-slate-800">
+              <Users className="w-12 h-12 text-slate-300 dark:text-slate-700 mx-auto mb-4" />
+              <h3 className="text-xl font-bold text-slate-700 dark:text-slate-300 mb-2">{t('No Visitors Yet')}</h3>
+              <p className="text-slate-500">{t('When users view or locate your shop, they will appear here.')}</p>
+            </div>
+          ) : (
+            <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
+              <div className="overflow-x-auto p-4">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="text-slate-500 dark:text-slate-400 text-sm border-b-2 border-slate-100 dark:border-slate-700">
+                      <th className="p-4 font-bold uppercase tracking-wider">{t('Visitor Email')}</th>
+                      <th className="p-4 font-bold uppercase tracking-wider">{t('Shop')}</th>
+                      <th className="p-4 font-bold uppercase tracking-wider text-right">{t('Date & Time')}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {visitors.map((visitor) => (
+                      <tr key={visitor.id} className="border-b border-slate-100 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors">
+                        <td className="p-4 font-semibold text-slate-800 dark:text-white flex items-center">
+                          <div className="bg-primary-100 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 p-2 rounded-lg mr-3">
+                            <Users className="w-4 h-4" />
+                          </div>
+                          {visitor.userEmail}
+                        </td>
+                        <td className="p-4">
+                          <span className="bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 px-3 py-1 rounded-full text-xs font-bold">
+                            {visitor.shopName}
+                          </span>
+                        </td>
+                        <td className="p-4 text-right text-sm text-slate-500 dark:text-slate-400 font-medium">
+                          {new Date(visitor.date).toLocaleString()}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
           )}
         </div>
       )}
@@ -339,9 +478,9 @@ export default function ShopkeeperDashboard() {
           >
             <motion.div 
               initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-white dark:bg-slate-800 rounded-3xl p-0 w-full max-w-lg shadow-2xl border border-slate-100 dark:border-slate-700 overflow-hidden"
+              className="bg-white dark:bg-slate-800 rounded-3xl p-0 w-full max-w-lg shadow-2xl border border-slate-100 dark:border-slate-700 overflow-hidden max-h-[90vh] flex flex-col"
             >
-              <div className="flex justify-between items-center p-6 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900">
+              <div className="flex justify-between items-center p-6 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 flex-shrink-0">
                   <h2 className="text-xl font-bold text-slate-800 dark:text-white flex items-center">
                     <Store className="w-5 h-5 mr-2 text-primary-500" />
                     {formData.id ? t('Edit') : t('Add New Shop')}
@@ -350,65 +489,62 @@ export default function ShopkeeperDashboard() {
                     <Trash2 className="w-5 h-5" />
                   </button>
                 </div>
-              <form onSubmit={handleSaveShop} className="p-6 space-y-5">
+              <form onSubmit={handleSaveShop} className="p-6 space-y-5 overflow-y-auto">
                 <div>
-                  <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Shop Name</label>
+                  <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">{t('shop.name')}</label>
                   <input required type="text" className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl focus:ring-4 focus:ring-secondary-500/20 focus:border-secondary-500 outline-none transition-all shadow-sm font-medium" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
-                    <div>
+                    <div className="flex-1">
                       <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">{t('Service Type')}</label>
-                      <select 
+                      <input 
+                        list="service-categories"
                         required
-                        className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-4 focus:ring-primary-500/20 focus:border-primary-500 outline-none transition-all dark:text-white"
+                        placeholder={t('Type or select a service...')}
+                        className="w-full px-5 py-4 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl outline-none font-medium text-slate-700 dark:text-slate-300"
                         value={formData.type}
-                        onChange={e => setFormData({...formData, type: e.target.value})}
-                      >
-                        <option value="">Select Type</option>
-                        {['Plumbing', 'Electrical', 'Cleaning', 'Carpentry', 'Painting', 'Mechanic', 'Tailoring', 'Printing', 'Other'].map(type => (
-                          <option key={type} value={type}>{type}</option>
+                        onChange={(e) => setFormData({...formData, type: e.target.value})}
+                      />
+                      <datalist id="service-categories">
+                        {SERVICE_CATEGORIES.filter(cat => cat !== 'Other').map(type => (
+                          <option key={type} value={type}>{t(type) || type}</option>
                         ))}
-                      </select>
+                      </datalist>
                     </div>
-                    <div>
-                      <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">{t('Base Price')} (₹)</label>
-                      <input required type="number" className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl focus:ring-4 focus:ring-secondary-500/20 focus:border-secondary-500 outline-none transition-all shadow-sm font-medium" value={formData.price} onChange={e => setFormData({...formData, price: e.target.value})} />
+                    <div className="flex-1">
+                      <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">{t('Price (₹)')}</label>
+                      <input required type="text" placeholder="e.g. 500 or 10-20" className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl focus:ring-4 focus:ring-secondary-500/20 focus:border-secondary-500 outline-none transition-all shadow-sm font-medium" value={formData.price} onChange={e => setFormData({...formData, price: e.target.value})} />
                     </div>
                 </div>
+
+
                 <div className="flex gap-4">
                   <div className="flex-1">
-                    <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Latitude (Optional)</label>
-                    <input type="number" step="any" placeholder="e.g. 18.5204" className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl focus:ring-4 focus:ring-secondary-500/20 focus:border-secondary-500 outline-none transition-all shadow-sm font-medium" value={formData.lat} onChange={e => setFormData({...formData, lat: e.target.value})} />
-                  </div>
-                  <div className="flex-1">
-                    <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">{t('shop.longitude') || 'Longitude (Optional)'}</label>
-                    <input type="number" step="any" placeholder="e.g. 73.8567" className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl focus:ring-4 focus:ring-secondary-500/20 focus:border-secondary-500 outline-none transition-all shadow-sm font-medium" value={formData.lng} onChange={e => setFormData({...formData, lng: e.target.value})} />
-                  </div>
-                </div>
-                <div className="flex gap-4">
-                  <div className="flex-1">
-                    <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">{t('shop.contact') || 'Contact Number'}</label>
-                    <input required type="tel" placeholder="e.g. 9876543210" className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl focus:ring-4 focus:ring-secondary-500/20 focus:border-secondary-500 outline-none transition-all shadow-sm font-medium" value={formData.contact} onChange={e => setFormData({...formData, contact: e.target.value})} />
+                    <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">{t('shop.contact')}</label>
+                    <input required type="tel" placeholder="e.g. 9876543210" className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl focus:ring-4 focus:ring-secondary-500/20 focus:border-secondary-500 outline-none transition-all shadow-sm font-medium" value={formData.contact} onChange={e => {
+                      const val = e.target.value.replace(/\D/g, '');
+                      if (val.length <= 10) setFormData({...formData, contact: val});
+                    }} />
                   </div>
                 </div>
                 <div className="flex gap-4">
                   <div className="flex-1">
-                    <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">{t('shop.location') || 'Location / Address'}</label>
+                    <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">{t('shop.location')}</label>
                     <input required type="text" placeholder="e.g. MG Road, Pune" className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl focus:ring-4 focus:ring-secondary-500/20 focus:border-secondary-500 outline-none transition-all shadow-sm font-medium" value={formData.address} onChange={e => setFormData({...formData, address: e.target.value})} />
                   </div>
                 </div>
                 <div className="flex gap-4">
                   <div className="flex-1">
-                    <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">{t('shop.opening_time') || 'Opening Time'}</label>
+                    <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">{t('shop.opening_time')}</label>
                     <input type="time" className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl focus:ring-4 focus:ring-secondary-500/20 focus:border-secondary-500 outline-none transition-all shadow-sm font-medium" value={formData.openingTime} onChange={e => setFormData({...formData, openingTime: e.target.value})} />
                   </div>
                   <div className="flex-1">
-                    <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">{t('shop.closing_time') || 'Closing Time'}</label>
+                    <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">{t('shop.closing_time')}</label>
                     <input type="time" className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl focus:ring-4 focus:ring-secondary-500/20 focus:border-secondary-500 outline-none transition-all shadow-sm font-medium" value={formData.closingTime} onChange={e => setFormData({...formData, closingTime: e.target.value})} />
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">{t('shop.description') || 'Description'}</label>
+                  <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">{t('shop.description')}</label>
                   <textarea required className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl focus:ring-4 focus:ring-secondary-500/20 focus:border-secondary-500 outline-none transition-all shadow-sm h-28 resize-none font-medium" value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})}></textarea>
                 </div>
                   <div className="flex gap-4 pt-4">

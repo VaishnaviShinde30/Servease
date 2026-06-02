@@ -4,8 +4,10 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
 import { supabase } from '../supabase';
+import { useTranslation } from 'react-i18next';
 
 export default function UpdatePassword() {
+  const { t } = useTranslation();
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -56,13 +58,13 @@ export default function UpdatePassword() {
         <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-emerald-100 text-emerald-600 mb-6 shadow-inner">
           <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
         </div>
-        <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight">Update Password</h2>
-        <p className="text-slate-500 mt-2 font-medium">Please enter your new password below.</p>
+        <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight">{t('update.title')}</h2>
+        <p className="text-slate-500 mt-2 font-medium">{t('update.subtitle')}</p>
       </div>
       
       <form onSubmit={handleSubmit} className="space-y-5">
         <div>
-          <label className="block text-sm font-bold text-slate-700 mb-2">New Password</label>
+          <label className="block text-sm font-bold text-slate-700 mb-2">{t('update.new_password')}</label>
           <input 
             type="password" 
             required 
@@ -73,7 +75,7 @@ export default function UpdatePassword() {
           />
         </div>
         <div>
-          <label className="block text-sm font-bold text-slate-700 mb-2">Confirm New Password</label>
+          <label className="block text-sm font-bold text-slate-700 mb-2">{t('update.confirm_password')}</label>
           <input 
             type="password" 
             required 
@@ -91,7 +93,7 @@ export default function UpdatePassword() {
           type="submit" 
           className="w-full bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-700 hover:to-emerald-600 text-white font-bold py-4 rounded-xl shadow-lg shadow-emerald-500/30 transition-all disabled:opacity-50 mt-6"
         >
-          {loading ? 'Updating...' : 'Update Password'}
+          {loading ? t('update.updating') : t('update.title')}
         </motion.button>
       </form>
     </motion.div>

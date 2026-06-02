@@ -2,7 +2,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { useTranslation } from 'react-i18next';
-import { LogOut, Home, User, Hexagon, Moon, Sun, Compass, Globe } from 'lucide-react';
+import { LogOut, Home, User, Hexagon, Moon, Sun, Compass, Globe, Settings as SettingsIcon } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export default function Navbar() {
@@ -40,7 +40,7 @@ export default function Navbar() {
             </div>
             <div className="flex flex-col justify-center">
               <span className="text-[22px] font-bold text-slate-900 dark:text-white tracking-tight leading-none">
-                Servease
+                {t('Servease') || 'Servease'}
               </span>
               <span className="text-[9px] font-semibold text-slate-500 dark:text-slate-400 tracking-wider uppercase mt-1">
                 {t('navbar.subtitle') || 'We Recommend, You Decide'}
@@ -49,6 +49,10 @@ export default function Navbar() {
           </Link>
           
           <div className="flex items-center space-x-3 sm:space-x-4">
+            <Link to="/about" className="text-slate-600 dark:text-slate-300 hover:text-primary-600 dark:hover:text-primary-400 font-semibold transition-colors hidden sm:block">
+              {t('About Us') || 'About Us'}
+            </Link>
+            
             <div className="flex items-center bg-slate-100 dark:bg-slate-800 rounded-xl px-2 py-1.5 border border-slate-200 dark:border-slate-700">
               <Globe className="w-4 h-4 text-slate-500 mr-1" />
               <select 
@@ -70,6 +74,15 @@ export default function Navbar() {
             >
               {isDarkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
             </motion.button>
+            
+            {user && (
+              <Link 
+                to="/settings"
+                className="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors hidden sm:block"
+              >
+                <SettingsIcon className="w-5 h-5" />
+              </Link>
+            )}
 
             {user ? (
               <>

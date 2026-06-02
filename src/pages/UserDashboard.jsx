@@ -10,7 +10,9 @@ import 'leaflet/dist/leaflet.css';
 import { useTranslation } from 'react-i18next';
 import { isShopOpen } from '../utils/timeUtils';
 import { addFeedback } from '../utils/feedbackManager';
+import { recordVisit } from '../utils/visitManager';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 import HelpSupport from '../components/HelpSupport';
 
 // Fix for default marker icon in leaflet
@@ -45,6 +47,7 @@ function MapUpdater({ center, zoom = 14 }) {
 export default function UserDashboard() {
   const { t } = useTranslation();
   const { user } = useAuth();
+  const { isDarkMode } = useTheme();
   const [shops, setShops] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filterType, setFilterType] = useState('All');
@@ -61,7 +64,7 @@ export default function UserDashboard() {
   
   // Feedback modal state
   const [selectedShop, setSelectedShop] = useState(null);
-  const [rating, setRating] = useState(5);
+  const [rating, setRating] = useState(0);
   const [review, setReview] = useState('');
 
   useEffect(() => {
@@ -149,22 +152,48 @@ export default function UserDashboard() {
     }
   };
 
-  const handleViewOnMap = (shop) => {
-    if (shop.lat && shop.lng) {
-      setSelectedMapShop(shop);
-      // Center the map between user and shop
-      const midLat = (userLocation[0] + shop.lat) / 2;
-      const midLng = (userLocation[1] + shop.lng) / 2;
-      setMapCenter([midLat, midLng]);
-      setMapZoom(13); // Zoom out slightly to see both
-      
-      // Scroll to top on mobile so they see the map
-      if (window.innerWidth < 1024) {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+  const handleViewOnMap = async (shop) => {
+    let lat = shop.lat;
+    let lng = shop.lng;
+
+    if (!lat || !lng) {
+      if (!shop.address) {
+        toast.error("Location data and address not available for this shop.");
+        return;
       }
-    } else {
-      toast.error("Location data not available for this shop.");
+      
+      const toastId = toast.loading("Finding location on map...");
+      try {
+        const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(shop.address)}`);
+        const data = await res.json();
+        
+        if (data && data.length > 0) {
+          lat = parseFloat(data[0].lat);
+          lng = parseFloat(data[0].lon);
+          toast.dismiss(toastId);
+          toast.success("Location found!");
+        } else {
+          toast.dismiss(toastId);
+          toast.error("Could not find this address on the map.");
+          return;
+        }
+      } catch (e) {
+        toast.dismiss(toastId);
+        toast.error("Error finding location.");
+        return;
+      }
     }
+
+    const shopWithCoords = { ...shop, lat, lng };
+    setSelectedMapShop(shopWithCoords);
+    setMapCenter([lat, lng]);
+    setMapZoom(16); // Zoom in closer since we are centering on the shop
+    
+    // Scroll to top on mobile so they see the map
+    if (window.innerWidth < 1024) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    if (user) recordVisit(shop.id, user);
   };
 
   const openGoogleMapsDirections = (shop) => {
@@ -186,17 +215,46 @@ export default function UserDashboard() {
     return { ...shop, distance: dist, isDynamicDistance: isDynamic };
   });
 
+  const parseShopPrice = (p) => {
+    if (typeof p === 'number') return p;
+    if (typeof p === 'string') {
+      const parts = p.split('-').map(Number);
+      return parts.length > 0 && !isNaN(parts[0]) ? parts[0] : 0;
+    }
+    return 0;
+  };
+
   const filteredShops = shopsWithDistance.filter(shop => {
-    if (searchQuery && !shop.name.toLowerCase().includes(searchQuery.toLowerCase())) return false;
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      const shopName = shop.name?.toLowerCase() || '';
+      const translatedName = t(`shop_names.${shop.id}`) !== `shop_names.${shop.id}` ? t(`shop_names.${shop.id}`).toLowerCase() : shopName;
+      const shopDesc = shop.description?.toLowerCase() || '';
+      const translatedDesc = t(`shop_desc.${shop.id}`) !== `shop_desc.${shop.id}` ? t(`shop_desc.${shop.id}`).toLowerCase() : shopDesc;
+      const shopType = shop.type?.toLowerCase() || '';
+      const translatedType = t(shop.type) !== shop.type ? t(shop.type).toLowerCase() : shopType;
+
+      if (!shopName.includes(query) && 
+          !translatedName.includes(query) && 
+          !shopDesc.includes(query) && 
+          !translatedDesc.includes(query) && 
+          !shopType.includes(query) && 
+          !translatedType.includes(query)) {
+        return false;
+      }
+    }
     if (filterType !== 'All' && shop.type !== filterType) return false;
+    
+    const numPrice = parseShopPrice(shop.price);
+    
     if (priceRange && priceRange !== 'All') {
       if (priceRange.includes('-')) {
         const [min, max] = priceRange.split('-').map(Number);
-        if (!isNaN(min) && shop.price < min) return false;
-        if (!isNaN(max) && shop.price > max) return false;
+        if (!isNaN(min) && numPrice < min) return false;
+        if (!isNaN(max) && numPrice > max) return false;
       } else {
         const val = Number(priceRange);
-        if (!isNaN(val) && shop.price < val) return false;
+        if (!isNaN(val) && numPrice < val) return false;
       }
     }
     if (minRating && shop.rating < Number(minRating)) return false;
@@ -207,17 +265,18 @@ export default function UserDashboard() {
   const getRecommendedShops = () => {
     if (filteredShops.length === 0) return [];
     
-    const maxP = Math.max(...filteredShops.map(s => s.price));
+    const maxP = Math.max(...filteredShops.map(s => parseShopPrice(s.price)));
     const maxD = Math.max(...filteredShops.map(s => s.distance || 0));
 
     const scoredShops = filteredShops.map(shop => {
-      const pScore = maxP === 0 ? 1 : 1 - (shop.price / maxP);
+      const numPrice = parseShopPrice(shop.price);
+      const pScore = maxP === 0 ? 1 : 1 - (numPrice / maxP);
       const dScore = (maxD === 0 || shop.distance === null) ? 1 : 1 - (shop.distance / maxD);
       const rScore = shop.rating / 5;
 
       const totalScore = (0.4 * rScore) + (0.3 * pScore) + (0.3 * dScore);
       // Simulate market price (+20% avg)
-      const marketPrice = Math.round(shop.price * 1.2); 
+      const marketPrice = Math.round(numPrice * 1.2); 
       return { ...shop, recommendationScore: totalScore, marketPrice };
     });
 
@@ -231,16 +290,16 @@ export default function UserDashboard() {
     <div className="space-y-8">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-8">
         <div>
-          <h1 className="text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight">{t('user.discover_services') || 'Discover Services'}</h1>
-          <p className="text-slate-500 dark:text-slate-400 mt-2 font-medium">{t('user.find_best_rated') || 'Find the best-rated shops near you'}</p>
+          <h1 className="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-primary-600 via-tertiary-500 to-highlight-500 dark:from-primary-400 dark:via-tertiary-400 dark:to-highlight-400 tracking-tight">{t('user.discover_services')}</h1>
+          <p className="text-slate-500 dark:text-slate-400 mt-2 font-medium">{t('user.find_best_rated')}</p>
         </div>
         
-        <div className="flex flex-wrap gap-3 w-full lg:w-auto bg-white/80 dark:bg-slate-900/80 backdrop-blur-md p-4 rounded-2xl shadow-sm border border-slate-200/60 dark:border-slate-700/60 z-20 items-center">
-          <div className="flex items-center bg-slate-50 dark:bg-slate-800 rounded-xl px-4 py-2 border border-slate-200 dark:border-slate-700 transition-colors focus-within:border-primary-400 focus-within:ring-2 focus-within:ring-primary-100 dark:focus-within:ring-primary-900/50 flex-grow min-w-[200px]">
+        <div className="flex flex-col lg:flex-row gap-4 w-full lg:w-auto bg-white/80 dark:bg-slate-900/80 backdrop-blur-md p-5 rounded-3xl shadow-sm border border-slate-200/60 dark:border-slate-700/60 z-20 items-stretch lg:items-center">
+          <div className="flex items-center bg-slate-50 dark:bg-slate-800 rounded-2xl px-5 py-3 border border-slate-200 dark:border-slate-700 transition-colors focus-within:border-primary-400 focus-within:ring-2 focus-within:ring-primary-100 dark:focus-within:ring-primary-900/50 flex-grow min-w-[200px]">
             <Search className="w-4 h-4 text-slate-400 mr-2" />
             <input 
               type="text" 
-              placeholder="Search for Xerox, Tailor, or other stores..." 
+              placeholder={t('user.search_placeholder')}
               className="bg-transparent text-sm outline-none w-full text-slate-700 dark:text-slate-200 font-medium placeholder-slate-400"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -254,28 +313,28 @@ export default function UserDashboard() {
             />
           </div>
 
-          <div className="flex items-center bg-slate-50 dark:bg-slate-800 rounded-xl px-4 py-2 border border-slate-200 dark:border-slate-700 transition-colors focus-within:border-primary-400 focus-within:ring-2 focus-within:ring-primary-100 dark:focus-within:ring-primary-900/50">
-            <Tag className="w-4 h-4 text-primary-500 mr-2" />
+          <div className="flex items-center bg-slate-50 dark:bg-slate-800 rounded-2xl px-5 py-3 border border-slate-200 dark:border-slate-700 transition-colors focus-within:border-primary-400 focus-within:ring-2 focus-within:ring-primary-100 dark:focus-within:ring-primary-900/50">
+            <Tag className="w-5 h-5 text-primary-500 mr-3" />
             <select 
-              className="bg-transparent text-sm outline-none text-slate-700 dark:text-slate-200 font-medium"
+              className="bg-transparent text-sm outline-none text-slate-700 dark:text-slate-200 font-medium w-full lg:w-auto"
               value={filterType} 
               onChange={(e) => setFilterType(e.target.value)}
             >
-              {serviceTypes.map(type => <option key={type} value={type}>{type}</option>)}
+              {serviceTypes.map(type => <option key={type} value={type}>{type === 'All' ? t('user.filter_all') : (t(type) || type)}</option>)}
             </select>
           </div>
           
-          <div className="flex items-center bg-slate-50 dark:bg-slate-800 rounded-xl px-4 py-2 border border-slate-200 dark:border-slate-700 transition-colors focus-within:border-primary-400 focus-within:ring-2 focus-within:ring-primary-100 dark:focus-within:ring-primary-900/50">
+          <div className="flex items-center bg-slate-50 dark:bg-slate-800 rounded-2xl px-5 py-3 border border-slate-200 dark:border-slate-700 transition-colors focus-within:border-primary-400 focus-within:ring-2 focus-within:ring-primary-100 dark:focus-within:ring-primary-900/50">
             <span className="text-primary-500 font-bold mr-2">₹</span>
             <input 
               list="price-options"
-              className="bg-transparent text-sm outline-none text-slate-700 dark:text-slate-200 font-medium w-32"
-              placeholder="e.g. 100-120"
+              className="bg-transparent text-sm outline-none text-slate-700 dark:text-slate-200 font-medium w-28"
+              placeholder={t('user.any_price')}
               value={priceRange}
               onChange={(e) => setPriceRange(e.target.value)}
             />
             <datalist id="price-options">
-              <option value="All">{t('user.any_price') || 'Any Price'}</option>
+              <option value="All">{t('user.any_price')}</option>
               <option value="0-100">0 - 100</option>
               <option value="100-500">100 - 500</option>
               <option value="500-1000">500 - 1000</option>
@@ -283,6 +342,19 @@ export default function UserDashboard() {
             </datalist>
           </div>
 
+          <div className="flex items-center bg-slate-50 dark:bg-slate-800 rounded-2xl px-5 py-3 border border-slate-200 dark:border-slate-700 transition-colors focus-within:border-primary-400 focus-within:ring-2 focus-within:ring-primary-100 dark:focus-within:ring-primary-900/50">
+            <Star className="w-5 h-5 text-amber-500 mr-3" />
+            <select 
+              className="bg-transparent text-sm outline-none text-slate-700 dark:text-slate-200 font-medium w-full lg:w-auto"
+              value={minRating}
+              onChange={(e) => setMinRating(e.target.value)}
+            >
+              <option value="">{t('Any Rating')}</option>
+              <option value="4.5">4.5+ {t('Stars')}</option>
+              <option value="4.0">4.0+ {t('Stars')}</option>
+              <option value="3.0">3.0+ {t('Stars')}</option>
+            </select>
+          </div>
 
         </div>
       </div>
@@ -300,13 +372,13 @@ export default function UserDashboard() {
             ))}
           </div>
           {/* Skeleton Map */}
-          <div className="w-full lg:w-[55%] xl:w-[60%] h-[400px] lg:h-[800px] bg-slate-200 dark:bg-slate-800 animate-pulse rounded-3xl border border-slate-100 dark:border-slate-700"></div>
+          <div className="w-full lg:w-[55%] xl:w-[60%] h-[400px] lg:h-[calc(100vh-140px)] bg-slate-200 dark:bg-slate-800 animate-pulse rounded-3xl border border-slate-100 dark:border-slate-700"></div>
         </div>
       ) : (
         <div className="flex flex-col-reverse lg:flex-row gap-8 items-start relative">
           
           {/* Shop List (Left Side) */}
-          <div className="w-full lg:w-[45%] xl:w-[40%] flex flex-col gap-6 lg:h-[800px] lg:overflow-y-auto lg:pr-4 lg:-mr-4 custom-scrollbar">
+          <div className="w-full lg:w-[45%] xl:w-[40%] flex flex-col gap-6 lg:h-[calc(100vh-140px)] lg:overflow-y-auto lg:pr-4 lg:-mr-4 custom-scrollbar">
             <AnimatePresence>
               {rankedShops.map((shop, index) => {
                 const isBest = index === 0 && filteredShops.length > 1;
@@ -332,7 +404,7 @@ export default function UserDashboard() {
                   <div className="mt-2 mb-5 pr-20">
                     <div className="flex justify-between items-start mb-2">
                       <div>
-                        <h3 className="text-2xl font-bold text-slate-800 dark:text-white line-clamp-1 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">{shop.name}</h3>
+                        <h3 className="text-2xl font-bold text-slate-800 dark:text-white line-clamp-1 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">{t(`shop_names.${shop.id}`) !== `shop_names.${shop.id}` ? t(`shop_names.${shop.id}`) : (i18n.language === 'hi' && shop.name_hi) ? shop.name_hi : (i18n.language === 'mr' && shop.name_mr) ? shop.name_mr : shop.name}</h3>
                         <div className="flex items-center mt-1">
                           {isOpen ? (
                             <span className="flex items-center text-xs font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/30 px-2 py-0.5 rounded">
@@ -347,9 +419,9 @@ export default function UserDashboard() {
                           )}
                         </div>
                       </div>
-                      <span className="bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-xs px-3 py-1.5 rounded-lg font-bold uppercase tracking-wider">{t(`shop_types.${shop.type.toLowerCase()}`) || shop.type}</span>
+                      <span className="bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-xs px-3 py-1.5 rounded-lg font-bold uppercase tracking-wider">{t(`shop_types.${shop.type.toLowerCase()}`) !== `shop_types.${shop.type.toLowerCase()}` ? t(`shop_types.${shop.type.toLowerCase()}`) : shop.type}</span>
                     </div>
-                    <p className="text-slate-500 dark:text-slate-400 text-sm line-clamp-2 leading-relaxed">{shop.description}</p>
+                    <p className="text-slate-500 dark:text-slate-400 text-sm line-clamp-2 leading-relaxed">{t(`shop_desc.${shop.id}`) !== `shop_desc.${shop.id}` ? t(`shop_desc.${shop.id}`) : (i18n.language === 'hi' && shop.desc_hi) ? shop.desc_hi : (i18n.language === 'mr' && shop.desc_mr) ? shop.desc_mr : shop.description}</p>
                     
                     <div className="mt-3 space-y-2">
                       {shop.address && (
@@ -386,22 +458,31 @@ export default function UserDashboard() {
                       <span className="font-bold text-slate-900 dark:text-white">{shop.rating > 0 ? shop.rating : 'New'}</span> <span className="text-slate-400 dark:text-slate-500 ml-1">({shop.reviewCount || 0} {t('reviews')})</span>
                     </div>
                       <div className="flex gap-2">
-                        <button onClick={() => openGoogleMapsDirections(shop)} className="flex-1 text-center py-2 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 font-bold rounded-lg hover:bg-emerald-100 dark:hover:bg-emerald-900/40 transition-colors text-xs flex items-center justify-center">
-                          <Navigation className="w-3 h-3 mr-1" /> {t('Get Directions')}
+                        <button onClick={() => openGoogleMapsDirections(shop)} className="flex-[2] text-center py-3 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 font-bold rounded-xl hover:bg-emerald-100 dark:hover:bg-emerald-900/40 transition-colors text-sm flex items-center justify-center">
+                          <Navigation className="w-4 h-4 mr-2" /> {t('Get Directions')}
                         </button>
-                        <button onClick={() => handleViewOnMap(shop)} className="flex-1 text-center py-2 bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 font-bold rounded-lg hover:bg-primary-100 dark:hover:bg-primary-900/40 transition-colors text-xs flex items-center justify-center">
-                          <MapIcon className="w-3 h-3 mr-1" /> {t('Locate')}
+                        <button onClick={() => handleViewOnMap(shop)} className="flex-[2] text-center py-3 bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 font-bold rounded-xl hover:bg-primary-100 dark:hover:bg-primary-900/40 transition-colors text-sm flex items-center justify-center">
+                          <MapIcon className="w-4 h-4 mr-2" /> {t('Locate')}
                         </button>
                       </div>
                     </div>
 
-                    <button 
-                      onClick={() => setSelectedShop(shop)}
-                      className="w-full mt-4 py-3 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600 rounded-xl font-bold transition-all flex justify-center items-center"
-                    >
-                      <MessageSquare className="w-4 h-4 mr-2" />
-                      {t('Leave Feedback')}
-                    </button>
+                    <div className="flex gap-3 mt-4">
+                      <a 
+                        href={`tel:${shop.contact}`}
+                        className="flex-[2] py-3 bg-gradient-to-r from-primary-600 to-primary-500 hover:from-primary-700 hover:to-primary-600 text-white rounded-xl font-bold transition-all flex justify-center items-center shadow-lg shadow-primary-500/30"
+                      >
+                        <Phone className="w-4 h-4 mr-2" />
+                        {t('Call Now')}
+                      </a>
+                      <button 
+                        onClick={() => setSelectedShop(shop)}
+                        title={t('Leave Feedback')}
+                        className="flex-[1] py-3 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600 rounded-xl font-bold transition-all flex justify-center items-center"
+                      >
+                        <MessageSquare className="w-5 h-5" />
+                      </button>
+                    </div>
                   </motion.div>
                 );
               })}
@@ -415,8 +496,8 @@ export default function UserDashboard() {
                 <div className="w-20 h-20 bg-slate-50 dark:bg-slate-900/50 rounded-full flex items-center justify-center mb-4">
                   <Search className="w-8 h-8 text-slate-300 dark:text-slate-600" />
                 </div>
-                <h3 className="text-xl font-bold text-slate-800 dark:text-white mb-2">{t('user.no_matches_found') || 'No matches found'}</h3>
-                <p className="text-slate-500 dark:text-slate-400 max-w-xs mx-auto text-sm">{t('user.no_matches_subtitle') || 'We couldn\'t find any services matching your specific filters. Try adjusting them.'}</p>
+                <h3 className="text-xl font-bold text-slate-800 dark:text-white mb-2">{t('user.no_matches_found')}</h3>
+                <p className="text-slate-500 dark:text-slate-400 max-w-xs mx-auto text-sm">{t('user.no_matches_subtitle')}</p>
                 <button 
                   onClick={() => {setFilterType('All'); setPriceRange(''); setMinRating('');}} 
                   className="mt-6 px-6 py-2 bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-400 font-bold rounded-xl hover:bg-primary-200 transition-colors"
@@ -428,10 +509,13 @@ export default function UserDashboard() {
           </div>
 
           {/* Sticky Map (Right Side) */}
-          <div className="w-full lg:w-[55%] xl:w-[60%] h-[400px] lg:h-[800px] lg:sticky lg:top-28 rounded-3xl overflow-hidden shadow-xl border border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-900 z-10">
+          <div className="w-full lg:w-[55%] xl:w-[60%] h-[400px] lg:h-[calc(100vh-140px)] lg:sticky lg:top-28 rounded-3xl overflow-hidden shadow-2xl border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-900 z-10 transition-colors duration-300">
             <MapContainer center={mapCenter} zoom={mapZoom} style={{ height: '100%', width: '100%' }}>
               <TileLayer
-                url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
+                key={isDarkMode ? 'dark' : 'light'}
+                url={isDarkMode 
+                  ? "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+                  : "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"}
                 attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
               />
               <MapUpdater center={mapCenter} zoom={mapZoom} />
@@ -439,13 +523,13 @@ export default function UserDashboard() {
               {/* User Location Marker */}
               <Marker position={userLocation} icon={userIcon}>
                 <Popup className="font-sans">
-                  <div className="font-bold text-slate-800">Your Location</div>
-                  <div className="text-xs text-slate-500">Searching nearby...</div>
+                  <div className="font-bold text-slate-800">{t('Your Location')}</div>
+                  <div className="text-xs text-slate-500">{t('Searching nearby...')}</div>
                 </Popup>
               </Marker>
 
               {/* Shop Markers */}
-              {rankedShops.map((shop) => (
+              {(selectedMapShop ? [selectedMapShop] : rankedShops).map((shop) => (
                 shop.lat && shop.lng && (
                   <Marker key={shop.id} position={[shop.lat, shop.lng]}>
                     <Popup className="font-sans">
@@ -459,9 +543,9 @@ export default function UserDashboard() {
                         </div>
                         <button 
                           onClick={() => openGoogleMapsDirections(shop)}
-                          className="w-full bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold py-2 rounded-lg transition-colors flex justify-center items-center"
+                          className="w-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 font-bold py-3 rounded-xl transition-colors flex justify-center items-center"
                         >
-                          <Navigation className="w-3 h-3 mr-1" /> Get Directions
+                          <Navigation className="w-4 h-4 mr-2" /> {t('Locate')}
                         </button>
                       </div>
                     </Popup>
@@ -495,12 +579,12 @@ export default function UserDashboard() {
               initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }}
               className="bg-white rounded-3xl p-8 w-full max-w-md shadow-2xl border border-slate-100"
             >
-              <h3 className="text-2xl font-extrabold text-slate-900 mb-2">Rate {selectedShop.name}</h3>
-              <p className="text-slate-500 text-sm mb-8 font-medium">Your feedback directly influences the recommendation engine.</p>
+              <h3 className="text-2xl font-extrabold text-slate-900 mb-2">{t('user.rate')} {selectedShop.name}</h3>
+              <p className="text-slate-500 text-sm mb-8 font-medium">{t('user.feedback_desc')}</p>
               
               <form onSubmit={submitFeedback} className="space-y-6">
                 <div>
-                  <label className="block text-sm font-bold text-slate-700 mb-3">Your Rating</label>
+                  <label className="block text-sm font-bold text-slate-700 mb-3">{t('user.your_rating')}</label>
                   <div className="flex gap-2">
                     {[1,2,3,4,5].map(num => (
                       <button 
@@ -513,18 +597,18 @@ export default function UserDashboard() {
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-bold text-slate-700 mb-2">Write a Review</label>
+                  <label className="block text-sm font-bold text-slate-700 mb-2">{t('user.write_review')}</label>
                   <textarea 
                     required
                     className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-primary-500/20 focus:border-primary-500 outline-none h-32 resize-none transition-all shadow-sm"
-                    placeholder="Tell us about your experience..."
+                    placeholder={t('user.review_placeholder')}
                     value={review}
                     onChange={(e) => setReview(e.target.value)}
                   ></textarea>
                 </div>
                 <div className="flex gap-4 pt-2">
-                  <button type="button" onClick={() => setSelectedShop(null)} className="flex-1 px-6 py-3.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-bold transition-colors">Cancel</button>
-                  <button type="submit" className="flex-1 px-6 py-3.5 bg-gradient-to-r from-primary-600 to-primary-500 hover:from-primary-700 hover:to-primary-600 text-white rounded-xl font-bold shadow-lg shadow-primary-500/30 transition-all">Submit</button>
+                  <button type="button" onClick={() => setSelectedShop(null)} className="flex-1 px-6 py-3.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-bold transition-colors">{t('Cancel')}</button>
+                  <button type="submit" className="flex-1 px-6 py-3.5 bg-gradient-to-r from-primary-600 to-primary-500 hover:from-primary-700 hover:to-primary-600 text-white rounded-xl font-bold shadow-lg shadow-primary-500/30 transition-all">{t('Submit')}</button>
                 </div>
               </form>
             </motion.div>

@@ -1,8 +1,10 @@
 import { Link } from 'react-router-dom';
 import { Home, AlertTriangle } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 
 export default function NotFound() {
+  const { t } = useTranslation();
   return (
     <div className="min-h-[70vh] flex flex-col items-center justify-center px-4 text-center">
       <motion.div 
@@ -19,12 +21,11 @@ export default function NotFound() {
           404
         </h1>
         <h2 className="text-2xl font-bold text-raisin-800 dark:text-raisin-200 mb-4">
-          Page Not Found
+          {t('notfound.title')}
         </h2>
         
         <p className="text-raisin-500 dark:text-raisin-400 mb-8 leading-relaxed font-medium">
-          Oops! The page you are looking for doesn't exist or has been moved. 
-          Let's get you back on track.
+          {t('notfound.desc')}
         </p>
         
         <Link 
@@ -32,7 +33,7 @@ export default function NotFound() {
           className="inline-flex items-center justify-center w-full px-8 py-4 bg-primary-600 hover:bg-primary-700 text-white font-bold rounded-xl shadow-lg shadow-primary-500/30 transition-all hover:-tranraisin-y-1"
         >
           <Home className="w-5 h-5 mr-2" />
-          Back to Homepage
+          {t('notfound.back')}
         </Link>
       </motion.div>
     </div>

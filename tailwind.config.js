@@ -15,7 +15,9 @@ export default {
       colors: {
         primary: colors.indigo,
         secondary: colors.slate,
-        accent: colors.teal
+        accent: colors.teal,
+        tertiary: colors.violet,
+        highlight: colors.fuchsia,
       }
     },
   },

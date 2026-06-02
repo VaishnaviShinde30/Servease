@@ -1,0 +1,81 @@
+const { addTranslations } = require('./addTranslations.cjs');
+
+const en = {
+  "navbar.subtitle": "We Recommend, You Decide",
+  "Servease": "Servease",
+  "footer.desc": "Smart service recommendation platform. Connecting students and locals with the best-rated shops based on price, distance, and reviews.",
+  "footer.platform": "Platform",
+  "footer.find_services": "Find Services",
+  "footer.list_shop": "List Your Shop",
+  "footer.how_it_works": "How it Works",
+  "footer.pricing": "Pricing",
+  "footer.legal": "Legal",
+  "footer.terms": "Terms of Service",
+  "footer.privacy": "Privacy Policy",
+  "footer.cookie": "Cookie Policy",
+  "footer.disclaimer": "Disclaimer",
+  "footer.contact": "Contact Us",
+  "footer.address": "123 University Road, Tech Park, Pune, MH 411001",
+  "footer.designed": "Designed for Final Year Demonstration",
+  "footer.phone": "+91 98765 43210",
+  "footer.email": "support@servease.com",
+  "footer.copyright": "© 2024 Servease Inc. All rights reserved.",
+  "navbar.sign_up": "Sign Up",
+  "Home": "Home",
+  "Login": "Login",
+  "Logout": "Logout"
+};
+
+const hi = {
+  "navbar.subtitle": "हम अनुशंसा करते हैं, आप निर्णय लें",
+  "Servease": "सर्वीज़",
+  "footer.desc": "स्मार्ट सर्विस रिकमेंडेशन प्लेटफॉर्म। कीमत, दूरी और समीक्षाओं के आधार पर छात्रों और स्थानीय लोगों को सर्वश्रेष्ठ रेटिंग वाली दुकानों से जोड़ना।",
+  "footer.platform": "मंच",
+  "footer.find_services": "सेवाएं खोजें",
+  "footer.list_shop": "अपनी दुकान सूचीबद्ध करें",
+  "footer.how_it_works": "यह कैसे काम करता है",
+  "footer.pricing": "मूल्य निर्धारण",
+  "footer.legal": "कानूनी",
+  "footer.terms": "सेवा की शर्तें",
+  "footer.privacy": "गोपनीयता नीति",
+  "footer.cookie": "कुकी नीति",
+  "footer.disclaimer": "अस्वीकरण",
+  "footer.contact": "हमसे संपर्क करें",
+  "footer.address": "123 यूनिवर्सिटी रोड, टेक पार्क, पुणे, एमएच 411001",
+  "footer.designed": "अंतिम वर्ष के प्रदर्शन के लिए डिज़ाइन किया गया",
+  "footer.phone": "+91 98765 43210",
+  "footer.email": "support@servease.com",
+  "footer.copyright": "© 2024 सर्वीज़ इंक. सर्वाधिकार सुरक्षित।",
+  "navbar.sign_up": "साइन अप करें",
+  "Home": "होम",
+  "Login": "लॉग इन",
+  "Logout": "लॉग आउट"
+};
+
+const mr = {
+  "navbar.subtitle": "आम्ही शिफारस करतो, तुम्ही ठरवा",
+  "Servease": "सर्व्हिज",
+  "footer.desc": "स्मार्ट सेवा शिफारस प्लॅटफॉर्म. किंमत, अंतर आणि पुनरावलोकनांवर आधारित विद्यार्थ्यांना आणि स्थानिकांना सर्वोत्तम रेट केलेल्या दुकानांशी जोडणे.",
+  "footer.platform": "प्लॅटफॉर्म",
+  "footer.find_services": "सेवा शोधा",
+  "footer.list_shop": "तुमचे दुकान नोंदवा",
+  "footer.how_it_works": "हे कसे कार्य करते",
+  "footer.pricing": "किंमत",
+  "footer.legal": "कायदेशीर",
+  "footer.terms": "सेवा अटी",
+  "footer.privacy": "गोपनीयता धोरण",
+  "footer.cookie": "कुकी धोरण",
+  "footer.disclaimer": "अस्वीकरण",
+  "footer.contact": "आमच्याशी संपर्क साधा",
+  "footer.address": "123 युनिव्हर्सिटी रोड, टेक पार्क, पुणे, एमएच 411001",
+  "footer.designed": "अंतिम वर्षाच्या प्रात्यक्षिकासाठी डिझाइन केलेले",
+  "footer.phone": "+91 98765 43210",
+  "footer.email": "support@servease.com",
+  "footer.copyright": "© 2024 सर्व्हिज इंक. सर्व हक्क राखीव.",
+  "navbar.sign_up": "साइन अप करा",
+  "Home": "होम",
+  "Login": "लॉग इन",
+  "Logout": "लॉग आउट"
+};
+
+addTranslations(en, hi, mr);

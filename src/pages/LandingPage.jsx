@@ -18,34 +18,34 @@ export default function LandingPage() {
         <div className="max-w-4xl mx-auto space-y-8">
           <div className="inline-flex items-center space-x-2 bg-primary-100 text-primary-800 px-4 py-2 rounded-full text-sm font-semibold tracking-wide">
             <Zap className="w-4 h-4" />
-            <span>{t('landing.smart_recommendation') || 'Smart Service Recommendation System'}</span>
+            <span>{t('landing.smart_recommendation')}</span>
           </div>
           
-          <h1 className="text-5xl md:text-7xl font-extrabold text-slate-900 dark:text-white tracking-tight leading-tight">
-            {t('landing.find_perfect_service') || 'Find the perfect service'} <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-600 to-secondary-500 dark:from-primary-400 dark:to-secondary-300">
-              {t('landing.near_you_instantly') || 'near you, instantly.'}
+          <h1 className="text-5xl md:text-7xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-primary-600 via-tertiary-500 to-highlight-500 dark:from-primary-400 dark:via-tertiary-400 dark:to-highlight-400 tracking-tight leading-tight mb-6">
+            {t('landing.find_perfect_service')} <br />
+            <span>
+              {t('landing.near_you_instantly')}
             </span>
           </h1>
           
           <p className="text-lg md:text-xl text-slate-500 dark:text-slate-400 max-w-2xl mx-auto leading-relaxed">
-            {t('landing.hero_subtitle') || 'Servease helps you discover top-rated tailors, xerox shops, mechanics, and laundry services. We analyze price, distance, and ratings to recommend the absolute best option.'}
+            {t('landing.hero_subtitle')}
           </p>
           
           <div className="flex flex-col sm:flex-row justify-center items-center gap-4 pt-6">
             {user ? (
               <Link to={role === 'admin' ? '/admin' : role === 'shopkeeper' ? '/shopkeeper' : '/user'} className="w-full sm:w-auto px-8 py-4 bg-primary-600 hover:bg-primary-700 text-white font-bold rounded-xl shadow-lg shadow-primary-500/30 transition-all flex items-center justify-center group">
-                {t('landing.go_to_dashboard') || 'Go to Dashboard'}
+                {t('landing.go_to_dashboard')}
                 <ChevronRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
               </Link>
             ) : (
               <>
                 <Link to="/signup" className="w-full sm:w-auto px-8 py-4 bg-primary-600 hover:bg-primary-700 text-white font-bold rounded-xl shadow-lg shadow-primary-500/30 transition-all flex items-center justify-center group">
-                  {t('landing.get_started_now') || 'Get Started Now'}
+                  {t('landing.get_started_now')}
                   <ChevronRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
                 </Link>
                 <Link to="/login" className="w-full sm:w-auto px-8 py-4 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-white font-bold rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 transition-all flex items-center justify-center">
-                  {t('landing.login_to_account') || 'Login to Account'}
+                  {t('landing.login_to_account')}
                 </Link>
               </>
             )}
@@ -57,8 +57,8 @@ export default function LandingPage() {
       <section className="py-20 px-4 bg-white/50 dark:bg-slate-900/50 border-t border-slate-100 dark:border-slate-800">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white mb-4">{t('landing.top_rated_services') || 'Top Rated Services'}</h2>
-            <p className="text-slate-500 dark:text-slate-400">{t('landing.join_today_subtitle') || 'Join today to book or review these amazing local shops.'}</p>
+            <h2 className="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white mb-4">{t('landing.top_rated_services')}</h2>
+            <p className="text-slate-500 dark:text-slate-400">{t('landing.join_today_subtitle')}</p>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -68,7 +68,7 @@ export default function LandingPage() {
               <div key={i} className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-6 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 relative group cursor-pointer">
                 {i === 0 && (
                   <div className="absolute -top-3 left-6 bg-gradient-to-r from-amber-500 to-orange-400 text-white text-xs font-bold px-3 py-1 rounded-full flex items-center shadow-sm z-10">
-                    <Award className="w-3 h-3 mr-1" /> {t('landing.top_pick') || 'Top Pick'}
+                    <Award className="w-3 h-3 mr-1" /> {t('landing.top_pick')}
                   </div>
                 )}
                 
@@ -97,18 +97,21 @@ export default function LandingPage() {
                 <div className="space-y-3 mb-6">
                   <div className="flex items-center text-slate-700 dark:text-slate-300 text-sm">
                     <Star className="w-4 h-4 text-amber-400 mr-2 fill-amber-400" />
-                    <span className="font-semibold text-slate-900 dark:text-white">{shop.rating}</span> <span className="text-slate-400 dark:text-slate-500 ml-1">({shop.reviewCount} {t('shop.reviews') || 'reviews'})</span>
+                    <span className="font-semibold text-slate-900 dark:text-white">{shop.rating}</span> <span className="text-slate-400 dark:text-slate-500 ml-1">({shop.reviewCount} {t('shop.reviews')})</span>
                   </div>
                   <div className="flex items-center text-slate-700 dark:text-slate-300 text-sm">
                     <MapPin className="w-4 h-4 text-slate-400 mr-2" />
-                    <span>{shop.distance} km {t('shop.away') || 'away'}</span>
+                    <span>{shop.distance} km {t('shop.away')}</span>
                   </div>
                 </div>
 
-                {/* Overlay link that directs to login */}
-                <Link to="/login" className="absolute inset-0 z-10 flex items-center justify-center bg-white/80 dark:bg-slate-900/80 opacity-0 group-hover:opacity-100 transition-opacity backdrop-blur-[2px] rounded-2xl">
+                {/* Overlay link that directs to dashboard or login */}
+                <Link 
+                  to={user ? (role === 'admin' ? '/admin' : role === 'shopkeeper' ? '/shopkeeper' : '/user') : '/login'} 
+                  className="absolute inset-0 z-10 flex items-center justify-center bg-white/80 dark:bg-slate-900/80 opacity-0 group-hover:opacity-100 transition-opacity backdrop-blur-[2px] rounded-2xl"
+                >
                   <span className="bg-primary-600 text-white px-6 py-2 rounded-lg font-semibold shadow-md flex items-center">
-                    {t('landing.login_to_view') || 'Login to view'} <ChevronRight className="w-4 h-4 ml-1" />
+                    {user ? t('landing.go_to_dashboard') : t('landing.login_to_view')} <ChevronRight className="w-4 h-4 ml-1" />
                   </span>
                 </Link>
               </div>
@@ -125,49 +128,49 @@ export default function LandingPage() {
             <div className="w-16 h-16 bg-primary-100 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 rounded-2xl flex items-center justify-center mx-auto shadow-inner">
               <Search className="w-8 h-8" />
             </div>
-            <h3 className="text-xl font-bold text-slate-900 dark:text-white">{t('landing.feature_1_title') || 'Smart Discovery'}</h3>
-            <p className="text-slate-500 dark:text-slate-400 text-sm">{t('landing.feature_1_desc') || 'Our algorithm ranks shops by balancing distance, price, and customer reviews.'}</p>
+            <h3 className="text-xl font-bold text-slate-900 dark:text-white">{t('landing.feature_1_title')}</h3>
+            <p className="text-slate-500 dark:text-slate-400 text-sm">{t('landing.feature_1_desc')}</p>
           </div>
           <div className="space-y-4">
             <div className="w-16 h-16 bg-primary-100 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 rounded-2xl flex items-center justify-center mx-auto shadow-inner">
               <Shield className="w-8 h-8" />
             </div>
-            <h3 className="text-xl font-bold text-slate-900 dark:text-white">{t('landing.feature_2_title') || 'Trusted Reviews'}</h3>
-            <p className="text-slate-500 dark:text-slate-400 text-sm">{t('landing.feature_2_desc') || 'Real reviews from local customers help you make the best decision.'}</p>
+            <h3 className="text-xl font-bold text-slate-900 dark:text-white">{t('landing.feature_2_title')}</h3>
+            <p className="text-slate-500 dark:text-slate-400 text-sm">{t('landing.feature_2_desc')}</p>
           </div>
           <div className="space-y-4">
             <div className="w-16 h-16 bg-primary-100 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 rounded-2xl flex items-center justify-center mx-auto shadow-inner">
               <Zap className="w-8 h-8" />
             </div>
-            <h3 className="text-xl font-bold text-slate-900 dark:text-white">{t('landing.feature_3_title') || 'Grow Your Business'}</h3>
-            <p className="text-slate-500 dark:text-slate-400 text-sm">{t('landing.feature_3_desc') || 'Shopkeepers can easily list their services and attract nearby customers.'}</p>
+            <h3 className="text-xl font-bold text-slate-900 dark:text-white">{t('landing.feature_3_title')}</h3>
+            <p className="text-slate-500 dark:text-slate-400 text-sm">{t('landing.feature_3_desc')}</p>
           </div>
         </div>
       </section>
       {/* How it Works Section */}
       <section className="py-20 px-4 bg-slate-50 dark:bg-slate-900/50">
         <div className="max-w-6xl mx-auto">
-          <h2 className="text-3xl font-black text-slate-900 dark:text-white text-center mb-12">{t('landing.how_it_works') || 'How It Works'}</h2>
+          <h2 className="text-3xl font-black text-slate-900 dark:text-white text-center mb-12">{t('landing.how_it_works')}</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 relative">
             {/* Connecting Line */}
             <div className="hidden md:block absolute top-1/2 left-0 w-full h-0.5 bg-slate-200 dark:bg-slate-700 -z-10 -translate-y-1/2"></div>
             
             <div className="bg-white dark:bg-slate-800 p-8 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-700 text-center relative z-10">
               <div className="w-12 h-12 bg-primary-600 text-white font-black rounded-full flex items-center justify-center mx-auto mb-6 text-xl shadow-lg shadow-primary-500/30">1</div>
-              <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">{t('landing.step1_title') || 'Search Services'}</h3>
-              <p className="text-slate-500 dark:text-slate-400 text-sm">{t('landing.step1_desc') || 'Find local shops and services around your current location instantly.'}</p>
+              <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">{t('landing.step1_title')}</h3>
+              <p className="text-slate-500 dark:text-slate-400 text-sm">{t('landing.step1_desc')}</p>
             </div>
             
             <div className="bg-white dark:bg-slate-800 p-8 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-700 text-center relative z-10">
               <div className="w-12 h-12 bg-primary-600 text-white font-black rounded-full flex items-center justify-center mx-auto mb-6 text-xl shadow-lg shadow-primary-500/30">2</div>
-              <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">{t('landing.step2_title') || 'Compare & Choose'}</h3>
-              <p className="text-slate-500 dark:text-slate-400 text-sm">{t('landing.step2_desc') || 'Compare prices, distance, and read genuine reviews from neighbors.'}</p>
+              <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">{t('landing.step2_title')}</h3>
+              <p className="text-slate-500 dark:text-slate-400 text-sm">{t('landing.step2_desc')}</p>
             </div>
             
             <div className="bg-white dark:bg-slate-800 p-8 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-700 text-center relative z-10">
               <div className="w-12 h-12 bg-primary-600 text-white font-black rounded-full flex items-center justify-center mx-auto mb-6 text-xl shadow-lg shadow-primary-500/30">3</div>
-              <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">{t('landing.step3_title') || 'Connect Easily'}</h3>
-              <p className="text-slate-500 dark:text-slate-400 text-sm">{t('landing.step3_desc') || 'Get directions or contact the shopkeeper directly to get your work done.'}</p>
+              <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">{t('landing.step3_title')}</h3>
+              <p className="text-slate-500 dark:text-slate-400 text-sm">{t('landing.step3_desc')}</p>
             </div>
           </div>
         </div>
@@ -180,26 +183,26 @@ export default function LandingPage() {
         <div className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-accent-500/20 rounded-full blur-[80px] translate-x-1/3 translate-y-1/3"></div>
         
         <div className="max-w-4xl mx-auto text-center relative z-10">
-          <h2 className="text-4xl md:text-5xl font-black mb-6 tracking-tight">{t('landing.about_title') || 'Empowering Local Communities'}</h2>
+          <h2 className="text-4xl md:text-5xl font-black mb-6 tracking-tight">{t('landing.about_title')}</h2>
           <p className="text-primary-100 text-lg md:text-xl leading-relaxed mb-10 max-w-2xl mx-auto">
-            {t('landing.about_desc') || 'Servease was born out of a simple idea: to bridge the gap between skilled local professionals and people who need them. We believe in strengthening neighborhood economies by making local services accessible, transparent, and completely hassle-free.'}
+            {t('landing.about_desc')}
           </p>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 pt-10 border-t border-primary-700/50">
             <div>
               <div className="text-3xl font-black text-accent-400 mb-1">500+</div>
-              <div className="text-xs font-bold uppercase tracking-wider text-primary-200">{t('landing.stat_shops') || 'Local Shops'}</div>
+              <div className="text-xs font-bold uppercase tracking-wider text-primary-200">{t('landing.stat_shops')}</div>
             </div>
             <div>
               <div className="text-3xl font-black text-accent-400 mb-1">10k+</div>
-              <div className="text-xs font-bold uppercase tracking-wider text-primary-200">{t('landing.stat_users') || 'Happy Users'}</div>
+              <div className="text-xs font-bold uppercase tracking-wider text-primary-200">{t('landing.stat_users')}</div>
             </div>
             <div>
               <div className="text-3xl font-black text-accent-400 mb-1">50+</div>
-              <div className="text-xs font-bold uppercase tracking-wider text-primary-200">{t('landing.stat_cities') || 'Cities Active'}</div>
+              <div className="text-xs font-bold uppercase tracking-wider text-primary-200">{t('landing.stat_cities')}</div>
             </div>
             <div>
               <div className="text-3xl font-black text-accent-400 mb-1">4.8</div>
-              <div className="text-xs font-bold uppercase tracking-wider text-primary-200">{t('landing.stat_rating') || 'App Rating'}</div>
+              <div className="text-xs font-bold uppercase tracking-wider text-primary-200">{t('landing.stat_rating')}</div>
             </div>
           </div>
         </div>

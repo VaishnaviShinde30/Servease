@@ -39,3 +39,15 @@ export const addFeedback = (shopId, userId, userName, rating, comment) => {
   localStorage.setItem(FEEDBACK_STORAGE_KEY, JSON.stringify(updatedFeedback));
   return newFeedback;
 };
+
+export const addReply = (feedbackId, replyText) => {
+  const allFeedback = getFeedback();
+  const updatedFeedback = allFeedback.map(fb => {
+    if (fb.id === feedbackId) {
+      return { ...fb, reply: replyText, replyDate: new Date().toISOString() };
+    }
+    return fb;
+  });
+  localStorage.setItem(FEEDBACK_STORAGE_KEY, JSON.stringify(updatedFeedback));
+  return updatedFeedback.find(fb => fb.id === feedbackId);
+};

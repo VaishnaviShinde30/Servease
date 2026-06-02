@@ -4,6 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
+import { Eye, EyeOff } from 'lucide-react';
 
 export default function Signup() {
   const { t } = useTranslation();
@@ -12,6 +13,7 @@ export default function Signup() {
   const [name, setName] = useState('');
   const [roleInput, setRoleInput] = useState('customer');
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const { signup, user, role, loading: loadingAuth } = useAuth();
   const navigate = useNavigate();
 
@@ -52,13 +54,13 @@ export default function Signup() {
       className="max-w-md mx-auto mt-10 bg-white/80 backdrop-blur-xl p-8 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-white"
     >
       <div className="text-center mb-8">
-        <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight">{t('signup.title') || 'Create Account'}</h2>
-        <p className="text-slate-500 mt-2 font-medium">{t('signup.subtitle') || 'Join Servease today'}</p>
+        <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight">{t('signup.title')}</h2>
+        <p className="text-slate-500 mt-2 font-medium">{t('signup.subtitle')}</p>
       </div>
       
       <form onSubmit={handleSubmit} className="space-y-5">
         <div>
-          <label className="block text-sm font-bold text-slate-700 mb-2">{t('Full Name') || 'Full Name'}</label>
+          <label className="block text-sm font-bold text-slate-700 mb-2">{t('signup.full_name')}</label>
           <input 
             type="text" 
             required 
@@ -69,7 +71,7 @@ export default function Signup() {
           />
         </div>
         <div>
-          <label className="block text-sm font-bold text-slate-700 mb-2">{t('Email Address') || 'Email Address'}</label>
+          <label className="block text-sm font-bold text-slate-700 mb-2">{t('signup.email_address')}</label>
           <input 
             type="email" 
             required 
@@ -80,27 +82,36 @@ export default function Signup() {
           />
         </div>
         <div>
-          <label className="block text-sm font-bold text-slate-700 mb-2">{t('Password') || 'Password'}</label>
-          <input 
-            type="password" 
-            required 
-            placeholder="••••••••"
-            className="w-full px-5 py-4 bg-white border border-slate-200 rounded-xl focus:ring-4 focus:ring-primary-500/20 focus:border-primary-500 outline-none transition-all shadow-sm"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
+          <label className="block text-sm font-bold text-slate-700 mb-2">{t('Password')}</label>
+          <div className="relative">
+            <input 
+              type={showPassword ? "text" : "password"} 
+              required 
+              placeholder="••••••••"
+              className="w-full px-5 py-4 bg-white border border-slate-200 rounded-xl focus:ring-4 focus:ring-primary-500/20 focus:border-primary-500 outline-none transition-all shadow-sm"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+            <button 
+              type="button" 
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 focus:outline-none"
+            >
+              {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+            </button>
+          </div>
         </div>
         
         <div className="pt-2">
-          <label className="block text-sm font-bold text-slate-700 mb-3">{t('signup.iam') || 'I am a...'}</label>
+          <label className="block text-sm font-bold text-slate-700 mb-3">{t('signup.iam')}</label>
           <div className="grid grid-cols-2 gap-4">
             <label className={`flex flex-col items-center justify-center p-4 border-2 rounded-xl cursor-pointer transition-all ${roleInput === 'customer' ? 'border-primary-500 bg-primary-50 text-primary-700' : 'border-slate-200 hover:border-slate-300 text-slate-500'}`}>
               <input type="radio" name="role" value="customer" className="sr-only" checked={roleInput === 'customer'} onChange={(e) => setRoleInput(e.target.value)} />
-              <span className="font-bold">{t('signup.user') || 'User'}</span>
+              <span className="font-bold">{t('signup.user')}</span>
             </label>
             <label className={`flex flex-col items-center justify-center p-4 border-2 rounded-xl cursor-pointer transition-all ${roleInput === 'shopkeeper' ? 'border-primary-500 bg-primary-50 text-primary-700' : 'border-slate-200 hover:border-slate-300 text-slate-500'}`}>
               <input type="radio" name="role" value="shopkeeper" className="sr-only" checked={roleInput === 'shopkeeper'} onChange={(e) => setRoleInput(e.target.value)} />
-              <span className="font-bold">{t('signup.shopkeeper') || 'Shopkeeper'}</span>
+              <span className="font-bold">{t('signup.shopkeeper')}</span>
             </label>
           </div>
         </div>
@@ -112,14 +123,14 @@ export default function Signup() {
           type="submit" 
           className="w-full bg-gradient-to-r from-primary-600 to-primary-500 hover:from-primary-700 hover:to-primary-600 text-white font-bold py-4 rounded-xl shadow-lg shadow-primary-500/30 transition-all disabled:opacity-50 mt-6"
         >
-          {loading ? (t('signup.creating') || 'Creating Account...') : (t('navbar.sign_up') || 'Sign Up')}
+          {loading ? t('signup.creating') : t('navbar.sign_up')}
         </motion.button>
       </form>
       
       <div className="mt-8 text-center text-sm text-slate-500 font-medium">
-        {t('signup.have_account') || 'Already have an account?'}
+        {t('signup.have_account')}
         <Link to="/login" className="text-primary-600 hover:text-primary-700 font-bold ml-1 transition-colors relative after:absolute after:bottom-0 after:left-0 after:h-[2px] after:w-full after:bg-primary-600 after:scale-x-0 hover:after:scale-x-100 after:transition-transform after:origin-left">
-          {t('login.sign_in') || 'Sign In'}
+          {t('login.sign_in')}
         </Link>
       </div>
     </motion.div>
