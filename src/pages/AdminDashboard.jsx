@@ -446,7 +446,7 @@ export default function AdminDashboard() {
                         </td>
                         <td className="p-4"><span className="bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs px-3 py-1.5 rounded-lg font-bold uppercase tracking-wider">{s.type}</span></td>
                         <td className="p-4 text-sm text-slate-600 dark:text-slate-300 font-medium">{s.contact || 'N/A'}</td>
-                        <td className="p-4 text-sm text-slate-400 font-mono">{s.owner_id.substring(0,8)}...</td>
+                        <td className="p-4 text-sm text-slate-600 dark:text-slate-400 font-mono">{(s.owner_id || 'system-created').substring(0,8)}...</td>
                         <td className="p-4 text-right flex justify-end gap-2">
                           <motion.button title="View Details" whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={() => setSelectedShop(s)} className="p-3 text-slate-400 hover:text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-xl transition-colors">
                             <Eye className="w-5 h-5" />
