@@ -65,6 +65,7 @@ export default function UserDashboard() {
   // Feedback modal state
   const [selectedShop, setSelectedShop] = useState(null);
   const [rating, setRating] = useState(0);
+  const [hoverRating, setHoverRating] = useState(0);
   const [review, setReview] = useState('');
 
   useEffect(() => {
@@ -150,7 +151,8 @@ export default function UserDashboard() {
       toast.success('Thank you for your feedback!');
       setSelectedShop(null);
       setReview('');
-      setRating(5);
+      setRating(0);
+      setHoverRating(0);
     } catch (error) {
       toast.success('Demo mode: Feedback received!');
       setSelectedShop(null);
@@ -590,13 +592,20 @@ export default function UserDashboard() {
               <form onSubmit={submitFeedback} className="space-y-6">
                 <div>
                   <label className="block text-sm font-bold text-slate-700 mb-3">{t('user.your_rating')}</label>
-                  <div className="flex gap-2">
+                  <div className="flex gap-1">
                     {[1,2,3,4,5].map(num => (
                       <button 
-                        key={num} type="button" onClick={() => setRating(num)}
-                        className={`p-2 rounded-full transition-transform hover:scale-110 ${rating >= num ? 'text-amber-400' : 'text-slate-200'}`}
+                        key={num} type="button"
+                        onClick={() => setRating(num)}
+                        onMouseEnter={() => setHoverRating(num)}
+                        onMouseLeave={() => setHoverRating(0)}
+                        className="p-1 rounded-full transition-transform hover:scale-110"
                       >
-                        <Star className={`w-10 h-10 ${rating >= num ? 'fill-amber-400' : ''}`} />
+                        <Star className={`w-10 h-10 transition-colors ${
+                          (hoverRating || rating) >= num
+                            ? 'fill-amber-400 text-amber-400'
+                            : 'text-slate-300'
+                        }`} />
                       </button>
                     ))}
                   </div>
@@ -612,8 +621,8 @@ export default function UserDashboard() {
                   ></textarea>
                 </div>
                 <div className="flex gap-4 pt-2">
-                  <button type="button" onClick={() => setSelectedShop(null)} className="flex-1 px-6 py-3.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-bold transition-colors">{t('Cancel')}</button>
-                  <button type="submit" className="flex-1 px-6 py-3.5 bg-gradient-to-r from-primary-600 to-primary-500 hover:from-primary-700 hover:to-primary-600 text-white rounded-xl font-bold shadow-lg shadow-primary-500/30 transition-all">{t('Submit')}</button>
+                  <button type="button" onClick={() => { setSelectedShop(null); setRating(0); setHoverRating(0); setReview(''); }} className="flex-1 px-6 py-3.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-bold transition-colors">{t('Cancel')}</button>
+                  <button type="submit" disabled={rating === 0} className="flex-1 px-6 py-3.5 bg-gradient-to-r from-primary-600 to-primary-500 hover:from-primary-700 hover:to-primary-600 text-white rounded-xl font-bold shadow-lg shadow-primary-500/30 transition-all disabled:opacity-40">{t('Submit')}</button>
                 </div>
               </form>
             </motion.div>
