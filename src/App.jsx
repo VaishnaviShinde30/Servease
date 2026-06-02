@@ -67,8 +67,8 @@ function AppRoutes() {
   const location = useLocation();
   const isLandingPage = location.pathname === '/';
   
-  // Hide footer on dashboard pages
-  const hideFooterPaths = ['/user', '/admin', '/shopkeeper'];
+  // Hide footer on dashboard and auth pages
+  const hideFooterPaths = ['/user', '/admin', '/shopkeeper', '/login', '/signup', '/forgot-password', '/update-password'];
   const showFooter = !hideFooterPaths.some(path => location.pathname.startsWith(path));
 
   return (

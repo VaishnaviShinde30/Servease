@@ -51,7 +51,7 @@ export default function Signup() {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      className="max-w-md mx-auto mt-10 bg-white/80 backdrop-blur-xl p-8 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-white"
+      className="max-w-lg mx-auto mt-10 bg-white/90 backdrop-blur-xl p-10 rounded-3xl shadow-[0_8px_40px_rgb(0,0,0,0.08)] border border-white"
     >
       <div className="text-center mb-8">
         <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight">{t('signup.title')}</h2>
